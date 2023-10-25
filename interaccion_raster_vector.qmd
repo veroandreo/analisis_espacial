@@ -1,6 +1,11 @@
 ---
 title: "Interacciones raster-vector"
-format: html
+author: "Veronica Andreo"
+date: today
+format: 
+  html:
+    toc: true
+    df-print: kable
 ---
 
 # Raster-vector interactions {#raster-vector}

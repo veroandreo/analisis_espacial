@@ -1,6 +1,11 @@
 ---
 title: "Operaciones espaciales"
-format: html
+author: "Veronica Andreo"
+date: today
+format: 
+  html:
+    toc: true
+    df-print: kable
 ---
 
 # Operaciones espaciales

@@ -6,8 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Veronica Andreo">
-<meta name="dcterms.date" content="2023-10-02">
+<meta name="author" content="Modificado de https://r.geocompx.org/">
 
 <title>Datos espaciales en R</title>
 <style>
@@ -83,9 +82,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#datos-espaciales-en-r" id="toc-datos-espaciales-en-r" class="nav-link active" data-scroll-target="#datos-espaciales-en-r">Datos espaciales en R</a>
   <ul class="collapse">
-  <li><a href="#datos-vectoriales" id="toc-datos-vectoriales" class="nav-link" data-scroll-target="#datos-vectoriales">Datos vectoriales</a></li>
-  <li><a href="#datos-raster" id="toc-datos-raster" class="nav-link" data-scroll-target="#datos-raster">Datos raster</a></li>
-  <li><a href="#operaciones-con-atributos" id="toc-operaciones-con-atributos" class="nav-link" data-scroll-target="#operaciones-con-atributos">Operaciones con atributos</a></li>
+  <li><a href="#datos-vectoriales" id="toc-datos-vectoriales" class="nav-link" data-scroll-target="#datos-vectoriales">Datos vectoriales</a>
+  <ul class="collapse">
+  <li><a href="#introducción-a-sf" id="toc-introducción-a-sf" class="nav-link" data-scroll-target="#introducción-a-sf">Introducción a sf</a></li>
+  <li><a href="#tipos-de-geometías" id="toc-tipos-de-geometías" class="nav-link" data-scroll-target="#tipos-de-geometías">Tipos de geometías</a></li>
+  </ul></li>
+  <li><a href="#datos-raster" id="toc-datos-raster" class="nav-link" data-scroll-target="#datos-raster">Datos raster</a>
+  <ul class="collapse">
+  <li><a href="#paquetes-de-r-para-trabajar-con-datos-ráster" id="toc-paquetes-de-r-para-trabajar-con-datos-ráster" class="nav-link" data-scroll-target="#paquetes-de-r-para-trabajar-con-datos-ráster">Paquetes de R para trabajar con datos ráster</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -104,16 +109,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Veronica Andreo </p>
+             <p>Modificado de <a href="https://r.geocompx.org/" class="uri">https://r.geocompx.org/</a> </p>
           </div>
   </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">October 2, 2023</p>
-    </div>
-  </div>
   
     
   </div>
@@ -123,23 +122,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="datos-espaciales-en-r" class="level1">
 <h1>Datos espaciales en R</h1>
+<p>Para esta fugaz intro a los datos espaciales en R, vamos a usar el libro “Geocomputation with R” que puede consultarse online aquí: <a href="https://r.geocompx.org/" class="uri">https://r.geocompx.org/</a>. Vamos a ir siguiendo algunos ejemplos del libro y quien desee conocer más detalles, puede consultarlos directamente allí o en los materiales que los autores mencionan.</p>
 <p>En esta clase vamos a ver los conceptos básicos sobre los tipos fundamentales de datos geográficos: vector y raster. Veremos cómo están implementados en R, y ejemplificaremos algunas de las tareas más comunes que podemos realizar con cada uno de ellos.</p>
-<p>The vector data model represents the world using points, lines and polygons. These have discrete, well-defined borders, meaning that vector datasets usually have a high level of precision (but not necessarily accuracy). The raster data model divides the surface up into cells of constant size. Raster datasets are the basis of background images used in web-mapping and have been a vital source of geographic data since the origins of aerial photography and satellite-based remote sensing devices. Rasters aggregate spatially specific features to a given resolution, meaning that they are consistent over space and scalable (many worldwide raster datasets are available).</p>
-<p>Which to use? The answer likely depends on your domain of application:</p>
+<p>El modelo de datos vectoriales representa el mundo mediante <strong>puntos</strong>, <strong>líneas</strong> y <strong>polígonos</strong>. Éstos tienen bordes discretos y bien definidos, lo que significa que los conjuntos de datos vectoriales suelen ser muy precisos (aunque no necesariamente exactos). El modelo de datos ráster divide la superficie en <strong>celdas</strong> de tamaño constante, generalmente. Los datos ráster agregan características a una resolución determinada, lo que significa que son coherentes en el espacio y escalables.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>¿Cuál utilizar? La respuesta depende probablemente de su ámbito de aplicación:</p>
 <ul>
-<li>Vector data tends to dominate the social sciences because human settlements tend to have discrete borders</li>
-<li>Raster dominates many environmental sciences because of the reliance on remote sensing data</li>
+<li>Los datos vectoriales tienden a dominar las ciencias sociales porque los asentamientos humanos tienden a tener fronteras discretas</li>
+<li>Los datos rasterizados predominan en muchas ciencias medioambientales por su dependencia de los datos de teledetección.</li>
 </ul>
+</div>
+</div>
 <section id="datos-vectoriales" class="level2">
 <h2 class="anchored" data-anchor-id="datos-vectoriales">Datos vectoriales</h2>
-<p>Simple features is an open standard developed and endorsed by the Open Geospatial Consortium (OGC). Simple Features is a hierarchical data model that represents a wide range of geometry types. sf can represent all common vector geometry types (raster data classes are not supported by sf): points, lines, polygons and their respective ‘multi’ versions (which group together features of the same type into a single feature). sf also supports geometry collections, which can contain multiple geometry types in a single object.</p>
-<p>sf’s ability to integrate multiple powerful libraries for geocomputation into a single framework is a notable achievement that reduces ‘barriers to entry’ into the world of reproducible geographic data analysis with high-performance libraries. sf’s functionality is well documented on its website at &lt;r-spatial.github.io/sf/&gt; which contains 7 vignettes. These can be viewed offline as follows:</p>
+<p>El modelo de datos vectoriales geográficos se basa en puntos situados dentro de un sistema de referencia de coordenadas (CRS). Los puntos pueden representar características autónomas (por ejemplo, la ubicación de una parada de autobús) o pueden unirse para formar geometrías más complejas, como líneas y polígonos.</p>
+<section id="introducción-a-sf" class="level3">
+<h3 class="anchored" data-anchor-id="introducción-a-sf">Introducción a sf</h3>
+<p>El paquete <strong>sf</strong> nos permite trabajar con datos vectoriales en R. Simple Features es un estándar abierto desarrollado y aprobado por el Open Geospatial Consortium (OGC). Simple Features es un modelo de datos jerárquico que representa una amplia gama de tipos de geometría. sf puede representar todos los tipos de geometría vectorial habituales (sf no admite clases de datos ráster): puntos, líneas, polígonos y sus respectivas versiones “multi” (que agrupan características del mismo tipo en una única característica). sf también admite colecciones de geometría, que pueden contener múltiples tipos de geometría en un único objeto. Simple features es un modelo de datos ampliamente soportado que subyace en las estructuras de datos de muchas aplicaciones SIG, incluyendo QGIS y PostGIS.</p>
+<p>La funcionalidad de sf está bien documentada en su sitio web <a href="https://r-spatial.github.io/sf/" class="uri">https://r-spatial.github.io/sf/</a>, que contiene 7 viñetas. Estas se pueden ver de la siguiente manera:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#vignette(package = "sf") # see which vignettes are available</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#vignette("sf1")          # an introduction to the package</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><img src="https://r.geocompx.org/figures/sf-classes.png" class="img-fluid"></p>
-<p>simple feature objects in R are stored in a data frame, with geographic data occupying a special column, usually named ‘geom’ or ‘geometry’. We will use the world dataset provided by spData, loaded at the beginning of this chapter, to show what sf objects are and how they work.</p>
+<p>Los objetos feature simples en R se almacenan en un <code>data.frame</code> (tabla de datos), con los datos geográficos ocupando una columna especial, normalmente llamada ‘geom’ o ‘geometry’. Utilizaremos el conjunto de datos world proporcionado por <code>spData</code> para mostrar qué son los objetos <code>sf</code> y cómo funcionan.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -150,10 +165,125 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code> [1] "iso_a2"    "name_long" "continent" "region_un" "subregion" "type"     
  [7] "area_km2"  "pop"       "lifeExp"   "gdpPercap" "geom"     </code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="kable-table">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 6%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">iso_a2</th>
+<th style="text-align: left;">name_long</th>
+<th style="text-align: left;">continent</th>
+<th style="text-align: left;">region_un</th>
+<th style="text-align: left;">subregion</th>
+<th style="text-align: left;">type</th>
+<th style="text-align: right;">area_km2</th>
+<th style="text-align: right;">pop</th>
+<th style="text-align: right;">lifeExp</th>
+<th style="text-align: right;">gdpPercap</th>
+<th style="text-align: left;">geom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">FJ</td>
+<td style="text-align: left;">Fiji</td>
+<td style="text-align: left;">Oceania</td>
+<td style="text-align: left;">Oceania</td>
+<td style="text-align: left;">Melanesia</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">19289.97</td>
+<td style="text-align: right;">885806</td>
+<td style="text-align: right;">69.96000</td>
+<td style="text-align: right;">8222.254</td>
+<td style="text-align: left;">MULTIPOLYGON (((-180 -16.55…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TZ</td>
+<td style="text-align: left;">Tanzania</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Eastern Africa</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">932745.79</td>
+<td style="text-align: right;">52234869</td>
+<td style="text-align: right;">64.16300</td>
+<td style="text-align: right;">2402.099</td>
+<td style="text-align: left;">MULTIPOLYGON (((33.90371 -0…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EH</td>
+<td style="text-align: left;">Western Sahara</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Northern Africa</td>
+<td style="text-align: left;">Indeterminate</td>
+<td style="text-align: right;">96270.60</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">MULTIPOLYGON (((-8.66559 27…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CA</td>
+<td style="text-align: left;">Canada</td>
+<td style="text-align: left;">North America</td>
+<td style="text-align: left;">Americas</td>
+<td style="text-align: left;">Northern America</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">10036042.98</td>
+<td style="text-align: right;">35535348</td>
+<td style="text-align: right;">81.95305</td>
+<td style="text-align: right;">43079.143</td>
+<td style="text-align: left;">MULTIPOLYGON (((-132.71 54….</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">US</td>
+<td style="text-align: left;">United States</td>
+<td style="text-align: left;">North America</td>
+<td style="text-align: left;">Americas</td>
+<td style="text-align: left;">Northern America</td>
+<td style="text-align: left;">Country</td>
+<td style="text-align: right;">9510743.74</td>
+<td style="text-align: right;">318622525</td>
+<td style="text-align: right;">78.84146</td>
+<td style="text-align: right;">51921.985</td>
+<td style="text-align: left;">MULTIPOLYGON (((-171.7317 6…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KZ</td>
+<td style="text-align: left;">Kazakhstan</td>
+<td style="text-align: left;">Asia</td>
+<td style="text-align: left;">Asia</td>
+<td style="text-align: left;">Central Asia</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">2729810.51</td>
+<td style="text-align: right;">17288285</td>
+<td style="text-align: right;">71.62000</td>
+<td style="text-align: right;">23587.338</td>
+<td style="text-align: left;">MULTIPOLYGON (((87.35997 49…</td>
+</tr>
+</tbody>
+</table>
 </div>
-<p>The contents of this geom column give sf objects their spatial powers: world$geom is a ‘list column’ that contains all the coordinates of the country polygons. sf objects can be plotted quickly with the function plot()</p>
+</div>
+</div>
+<p>El contenido de esta columna geom es la que confiere a los objetos sf sus poderes <strong>espaciales</strong>: <code>world$geom</code> es una “columna lista” de la clase sfc que contiene todas las coordenadas de los polígonos de los países. Los objetos sf pueden visualizarse rápidamente con la función <code>plot()</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: plotting the first 9 out of 10 attributes; use max.plot = 10 to plot
 all</code></pre>
@@ -162,8 +292,9 @@ all</code></pre>
 <p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Podemos obtener info de los atributos (columnas) de los objetos sf, como se hace con cualquier data.frame:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(world[<span class="st">"lifeExp"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(world[<span class="st">"lifeExp"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    lifeExp                 geom    
  Min.   :50.62   MULTIPOLYGON :177  
@@ -175,70 +306,87 @@ all</code></pre>
  NA's   :10                         </code></pre>
 </div>
 </div>
-<p>sf objects are easy to subset: the code below shows how to return an object containing only the first two rows and the first three columns of the world object.</p>
+<p>Los objetos sf son fáciles de subdividir. Por ejemplo, podemos recortar sólo las dos primeras filas y las tres primeras columnas del objeto world.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>world_mini <span class="ot">=</span> world[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world_mini)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>world_mini <span class="ot">=</span> world[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world_mini)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>simple features objects are data frames, with special geometry columns. These spatial columns are often called geom or geometry: world$geom refers to the spatial element of the world object described above. These geometry columns are ‘list columns’ of class sfc (see Section 2.2.7). In turn, sfc objects are composed of one or more objects of class sfg</p>
-<p>Simple features is a widely supported data model that underlies data structures in many GIS applications including QGIS and PostGIS.</p>
+<p>También podemos subdividir por columnas únicamente, ya sea con su índice o el nombre</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="st">"pop"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="st">"pop"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Podemos hacer selecciones</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>world_asia <span class="ot">=</span> world[world<span class="sc">$</span>continent <span class="sc">==</span> <span class="st">"Asia"</span>, ]</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>asia <span class="ot">=</span> <span class="fu">st_union</span>(world_asia)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>world_asia <span class="ot">=</span> world[world<span class="sc">$</span>continent <span class="sc">==</span> <span class="st">"Asia"</span>, ]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>asia <span class="ot">=</span> <span class="fu">st_union</span>(world_asia)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>y añadir capas a las imágenes existentes estableciendo add = TRUE</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="st">"pop"</span>], <span class="at">reset =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(asia, <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="st">"pop"</span>], <span class="at">reset =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(asia, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Hay varias formas de modificar los mapas con el método plot() de sf. Por ejemplo, se pueden superponer círculos, cuyos diámetros (fijados con cex =) representan poblaciones de países, en un mapa del mundo.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="st">"continent"</span>], <span class="at">reset =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>cex <span class="ot">=</span> <span class="fu">sqrt</span>(world<span class="sc">$</span>pop) <span class="sc">/</span> <span class="dv">10000</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>world_cents <span class="ot">=</span> <span class="fu">st_centroid</span>(world, <span class="at">of_largest =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world[<span class="st">"continent"</span>], <span class="at">reset =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>cex <span class="ot">=</span> <span class="fu">sqrt</span>(world<span class="sc">$</span>pop) <span class="sc">/</span> <span class="dv">10000</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>world_cents <span class="ot">=</span> <span class="fu">st_centroid</span>(world, <span class="at">of_largest =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: st_centroid assumes attributes are constant over geometries</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(world_cents), <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">cex =</span> cex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(world_cents), <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">cex =</span> cex)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>india <span class="ot">=</span> world[world<span class="sc">$</span>name_long <span class="sc">==</span> <span class="st">"India"</span>, ]</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(india), <span class="at">expandBB =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="dv">1</span>), <span class="at">col =</span> <span class="st">"gray"</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(world_asia), <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-<p>Geometry types Geometries are the basic building blocks of simple features. Simple features in R can take on one of the 18 geometry types supported by the sf package. In this chapter we will focus on the seven most commonly used types: POINT, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON and GEOMETRYCOLLECTION. Find the whole list of possible feature types in the PostGIS manual.</p>
-<p>Building sf vectors from scratch</p>
+</section>
+<section id="tipos-de-geometías" class="level3">
+<h3 class="anchored" data-anchor-id="tipos-de-geometías">Tipos de geometías</h3>
+<p>Las geometrías son los componentes básicos de los objetos sf y pueden adoptar uno de los 18 tipos de geometría que admite el paquete sf. Los siete tipos más utilizados son: PUNTO, LINESTRING, POLYGON, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON y GEOMETRYCOLLECTION.</p>
+<p>Por lo general, el usuario se ahorra la tediosa tarea de crear geometrías por su cuenta, ya que puede simplemente importar un archivo espacial ya existente. Sin embargo, existe un conjunto de funciones para crear objetos geométricos de características simples (sfg) desde cero si es necesario. Los nombres de estas funciones son sencillos, todas comienzan con el prefijo <code>st_</code> y terminan con el nombre del tipo de geometría:</p>
+<ul>
+<li>Un punto: <code>st_point()</code></li>
+<li>Una cadena de líneas: <code>st_linestring()</code></li>
+<li>Un polígono: <code>st_polygon()</code></li>
+<li>Un multipunto: <code>st_multipoint()</code></li>
+<li>Una multilínea: <code>st_multilínea()</code></li>
+<li>Un multipolígono: <code>st_multipolygon()</code></li>
+<li>Una colección de geometrías: <code>st_geometrycollection()</code></li>
+</ul>
+<p>Los objetos sfg pueden crearse a partir de tres tipos de datos R básicos:</p>
+<ul>
+<li>Un vector numérico: un único punto</li>
+<li>Una matriz: un conjunto de puntos, donde cada fila representa un punto, un multipunto o una cadena de líneas</li>
+<li>Una lista: una colección de objetos como matrices, multilíneas o colecciones de geometría.</li>
+</ul>
+</section>
 </section>
 <section id="datos-raster" class="level2">
 <h2 class="anchored" data-anchor-id="datos-raster">Datos raster</h2>
-<p>The spatial raster data model represents the world with the continuous grid of cells (often also called pixels; Figure 2.13:A). This data model often refers to so-called regular grids, in which each cell has the same, constant size – and we will focus on the regular grids in this book only. However, several other types of grids exist, including rotated, sheared, rectilinear, and curvilinear grids (see Chapter 1 of Pebesma and Bivand (2022) or Chapter 2 of Tennekes and Nowosad (2022)).</p>
-<p>The raster data model usually consists of a raster header and a matrix (with rows and columns) representing equally spaced cells (often also called pixels; Figure 2.13:A).15 The raster header defines the coordinate reference system, the extent and the origin. The origin (or starting point) is frequently the coordinate of the lower-left corner of the matrix (the terra package, however, uses the upper left corner, by default (Figure 2.13:B)). The header defines the extent via the number of columns, the number of rows and the cell size resolution. Hence, starting from the origin, we can easily access and modify each single cell by either using the ID of a cell (Figure 2.13:B) or by explicitly specifying the rows and columns. This matrix representation avoids storing explicitly the coordinates for the four corner points (in fact it only stores one coordinate, namely the origin) of each cell corner as would be the case for rectangular vector polygons. This and map algebra (Section 4.3.2) makes raster processing much more efficient and faster than vector data processing. However, in contrast to vector data, the cell of one raster layer can only hold a single value. The value might be numeric or categorical (Figure 2.13:C).</p>
+<p>El modelo de datos espaciales ráster representa el mundo con la cuadrícula continua de celdas (a menudo también llamadas píxeles). Este modelo de datos se refiere a menudo a las denominadas cuadrículas regulares, en las que cada celda tiene el mismo tamaño constante.</p>
+<p>El modelo de datos ráster suele constar de una cabecera ráster y una matriz (con filas y columnas) que representa celdas equidistantes (a menudo también denominadas píxeles). La cabecera ráster define el sistema de referencia de coordenadas, la extensión y el origen. El origen (o punto de partida) suele ser la coordenada de la esquina inferior izquierda de la matriz (el paquete terra, sin embargo, utiliza por defecto la esquina superior izquierda). La cabecera define la extensión mediante el número de columnas, el número de filas y la resolución del tamaño de las celdas. De este modo, partiendo del origen, podemos acceder fácilmente a cada celda y modificarla, ya sea utilizando el ID de una celda o especificando explícitamente las filas y columnas. Esta representación matricial evita almacenar explícitamente las coordenadas de los cuatro puntos de esquina (de hecho, sólo almacena una coordenada, el origen) de cada esquina de celda, como ocurriría en el caso de los polígonos vectoriales rectangulares. Sin embargo, a diferencia de los datos vectoriales, la celda de una capa raster sólo puede contener un único valor. El valor puede ser numérico o categórico.</p>
 <p><img src="https://r.geocompx.org/02-spatial-data_files/figure-html/raster-intro-plot-1.png" class="img-fluid"></p>
-<p>Raster maps usually represent continuous phenomena such as elevation, temperature, population density or spectral data. Discrete features such as soil or land-cover classes can also be represented in the raster data model.</p>
+<p>Los mapas raster suelen representar fenómenos continuos como la elevación, la temperatura, la densidad de población o datos espectrales. En el modelo de datos raster también pueden representarse características discretas, como clases de suelo o de cubierta terrestre.</p>
 <p><img src="https://r.geocompx.org/02-spatial-data_files/figure-html/raster-intro-plot2-1.png" class="img-fluid"></p>
-<p>R packages for working with raster data Over the last two decades, several packages for reading and processing raster datasets have been developed. As outlined in Section 1.5, chief among them was raster, which led to a step change in R’s raster capabilities when it was launched in 2010 and the premier package in the space until the development of terra and stars. Both more recently developed packages provide powerful and performant functions for working with raster datasets and there is substantial overlap between their possible use cases. In this book we focus on terra, which replaces the older and (in most cases) slower raster. Before learning about the how terra’s class system works, this section describes similarities and differences between terra and stars; this knowledge will help decide which is most appropriate in different situations.</p>
-<p>An introduction to terra The terra package supports raster objects in R. Like its predecessor raster (created by the same developer, Robert Hijmans), it provides an extensive set of functions to create, read, export, manipulate and process raster datasets. terra’s functionality is largely the same as the more mature raster package, but there are some differences: terra functions are usually more computationally efficient than raster equivalents. On the other hand, the raster class system is popular and used by many other packages. You can seamlessly translate between the two types of object to ensure backwards compatibility with older scripts and packages, for example, with the functions raster(), stack(), and brick() in the raster package (see the previous chapter for more on the evolution of R packages for working with geographic data).</p>
-<p>In addition to functions for raster data manipulation, terra provides many low-level functions that can form a foundation for developing new tools for working with raster datasets. terra also lets you work on large raster datasets that are too large to fit into the main memory. In this case, terra provides the possibility to divide the raster into smaller chunks, and processes these iteratively instead of loading the whole raster file into RAM.</p>
+<section id="paquetes-de-r-para-trabajar-con-datos-ráster" class="level3">
+<h3 class="anchored" data-anchor-id="paquetes-de-r-para-trabajar-con-datos-ráster">Paquetes de R para trabajar con datos ráster</h3>
+<p>En las dos últimas décadas, se han desarrollado varios paquetes para leer y procesar conjuntos de datos raster. El principal de ellos fue raster, que supuso un cambio radical en las capacidades raster de R cuando se lanzó en 2010 y se convirtió en el principal paquete en este ámbito hasta el desarrollo de terra y stars. Estos últimos, desarrollados más recientemente, ofrecen funciones potentes y eficaces para trabajar con conjuntos de datos ráster, y existe un solapamiento sustancial entre sus posibles casos de uso. Aquí nos vamos a centrar en el paquete terra.</p>
+<section id="introducción-a-terra" class="level4">
+<h4 class="anchored" data-anchor-id="introducción-a-terra">Introducción a terra</h4>
+<p>El paquete terra soporta objetos raster en R. Al igual que su predecesor raster (creado por el mismo desarrollador, Robert Hijmans), proporciona un amplio conjunto de funciones para crear, leer, exportar, manipular y procesar conjuntos de datos raster. La funcionalidad de terra es en gran medida la misma que la del paquete raster, pero hay algunas diferencias: las funciones de terra suelen ser más eficientes computacionalmente. Puede traducir sin problemas entre los dos tipos de objetos para garantizar la compatibilidad con scripts y paquetes más antiguos, por ejemplo, con las funciones raster(), stack() y brick() en el paquete raster.</p>
+<p>Además de las funciones para la manipulación de datos ráster, terra proporciona muchas funciones de bajo nivel que pueden constituir una base para el desarrollo de nuevas herramientas para trabajar con conjuntos de datos ráster. terra también le permite trabajar con grandes conjuntos de datos ráster que son demasiado grandes para caber en la memoria principal. En este caso, terra ofrece la posibilidad de dividir el raster en trozos más pequeños, y procesarlos iterativamente en lugar de cargar todo el archivo raster en la RAM.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>raster_filepath <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"raster/srtm.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>my_rast <span class="ot">=</span> <span class="fu">rast</span>(raster_filepath)</span>
@@ -248,12 +396,9 @@ all</code></pre>
 attr(,"package")
 [1] "terra"</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] "SpatRaster"</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; attr(,"package")</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] "terra"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>my_rast</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>my_rast</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>class       : SpatRaster 
 dimensions  : 457, 465, 1  (nrow, ncol, nlyr)
@@ -265,39 +410,46 @@ name        : srtm
 min value   : 1024 
 max value   : 2892 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; class       : SpatRaster </span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dimensions  : 457, 465, 1  (nrow, ncol, nlyr)</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; resolution  : 0.000833, 0.000833  (x, y)</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; extent      : -113, -113, 37.1, 37.5  (xmin, xmax, ymin, ymax)</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; coord. ref. : lon/lat WGS 84 (EPSG:4326) </span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; source      : srtm.tif </span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; name        : srtm </span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; min value   : 1024 </span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; max value   : 2892</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(my_rast)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(my_rast)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Raster classes</p>
-<p>The terra package supports numerous drivers with the help of the GDAL library. Rasters from files are usually not read entirely into RAM, with an exception of their header and a pointer to the file itself.</p>
+<p>Clases de datos raster</p>
+<p>El paquete terra soporta numerosos controladores con la ayuda de la biblioteca GDAL. Por lo general, los rásters de los archivos no se leen completamente en la RAM, a excepción de su cabecera y un puntero al archivo.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>single_raster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"raster/srtm.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>single_rast <span class="ot">=</span> <span class="fu">rast</span>(raster_filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>single_raster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"raster/srtm.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>single_rast <span class="ot">=</span> <span class="fu">rast</span>(raster_filepath)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>single_rast</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class       : SpatRaster 
+dimensions  : 457, 465, 1  (nrow, ncol, nlyr)
+resolution  : 0.0008333333, 0.0008333333  (x, y)
+extent      : -113.2396, -112.8521, 37.13208, 37.51292  (xmin, xmax, ymin, ymax)
+coord. ref. : lon/lat WGS 84 (EPSG:4326) 
+source      : srtm.tif 
+name        : srtm 
+min value   : 1024 
+max value   : 2892 </code></pre>
 </div>
-<p>Rasters can also be created from scratch using the same rast() function.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>new_raster <span class="ot">=</span> <span class="fu">rast</span>(<span class="at">nrows =</span> <span class="dv">6</span>, <span class="at">ncols =</span> <span class="dv">6</span>, </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">xmin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">xmax =</span> <span class="fl">1.5</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">ymax =</span> <span class="fl">1.5</span>,</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">vals =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">36</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The SpatRaster class also handles multiple layers, which typically correspond to a single multispectral satellite file or a time-series of rasters.</p>
+<p>Los rásters también pueden crearse desde cero utilizando la misma función rast().</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>multi_raster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"raster/landsat.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>multi_rast <span class="ot">=</span> <span class="fu">rast</span>(multi_raster_file)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>multi_rast</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>new_raster <span class="ot">=</span> <span class="fu">rast</span>(<span class="at">nrows =</span> <span class="dv">6</span>, <span class="at">ncols =</span> <span class="dv">6</span>, </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">xmin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">xmax =</span> <span class="fl">1.5</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">ymax =</span> <span class="fl">1.5</span>,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">vals =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">36</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(new_raster)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>La clase <code>SpatRaster</code> también puede manejar múltiples capas, por ejemplo, las bandas de un satélite multiespectral o una serie temporal de rásters.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>multi_raster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"raster/landsat.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>multi_rast <span class="ot">=</span> <span class="fu">rast</span>(multi_raster_file)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>multi_rast</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>class       : SpatRaster 
 dimensions  : 1428, 1128, 4  (nrow, ncol, nlyr)
@@ -309,34 +461,28 @@ names       : landsat_1, landsat_2, landsat_3, landsat_4
 min values  :      7550,      6404,      5678,      5252 
 max values  :     19071,     22051,     25780,     31961 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; class       : SpatRaster </span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dimensions  : 1428, 1128, 4  (nrow, ncol, nlyr)</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; resolution  : 30, 30  (x, y)</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; extent      : 301905, 335745, 4111245, 4154085  (xmin, xmax, ymin, ymax)</span></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; coord. ref. : WGS 84 / UTM zone 12N (EPSG:32612) </span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; source      : landsat.tif </span></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; names       : landsat_1, landsat_2, landsat_3, landsat_4 </span></span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; min values  :      7550,      6404,      5678,      5252 </span></span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; max values  :     19071,     22051,     25780,     31961</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nlyr</span>(multi_rast)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nlyr</span>(multi_rast)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 4</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Los rásters multicapa se pueden subdividir con el índice o el nombre de las capas deseadas:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>multi_rast3 <span class="ot">=</span> <span class="fu">subset</span>(multi_rast, <span class="dv">3</span>)</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>multi_rast4 <span class="ot">=</span> <span class="fu">subset</span>(multi_rast, <span class="st">"landsat_4"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>multi_rast3 <span class="ot">=</span> <span class="fu">subset</span>(multi_rast, <span class="dv">3</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>multi_rast4 <span class="ot">=</span> <span class="fu">subset</span>(multi_rast, <span class="st">"landsat_4"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Se pueden combinar o concatenar con la función <code>c()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>multi_rast34 <span class="ot">=</span> <span class="fu">c</span>(multi_rast3, multi_rast4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>multi_rast34 <span class="ot">=</span> <span class="fu">c</span>(multi_rast3, multi_rast4)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(multi_rast34)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="datos_espaciales_en_R_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
 </div>
 </section>
-<section id="operaciones-con-atributos" class="level2">
-<h2 class="anchored" data-anchor-id="operaciones-con-atributos">Operaciones con atributos</h2>
-<p>Attribute data is non-spatial information associated with geographic (geometry) data.</p>
+</section>
 </section>
 </section>
 

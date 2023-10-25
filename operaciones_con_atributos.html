@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Modificado de https://r.geocompx.org/">
+
+<title>Operaciones con atributos</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="operaciones_con_atributos_files/libs/clipboard/clipboard.min.js"></script>
+<script src="operaciones_con_atributos_files/libs/quarto-html/quarto.js"></script>
+<script src="operaciones_con_atributos_files/libs/quarto-html/popper.min.js"></script>
+<script src="operaciones_con_atributos_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="operaciones_con_atributos_files/libs/quarto-html/anchor.min.js"></script>
+<link href="operaciones_con_atributos_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="operaciones_con_atributos_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="operaciones_con_atributos_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="operaciones_con_atributos_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="operaciones_con_atributos_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#vectores" id="toc-vectores" class="nav-link active" data-scroll-target="#vectores">Vectores</a>
+  <ul class="collapse">
+  <li><a href="#subdivisión-de-vectores-vía-sus-atributos" id="toc-subdivisión-de-vectores-vía-sus-atributos" class="nav-link" data-scroll-target="#subdivisión-de-vectores-vía-sus-atributos">Subdivisión de vectores vía sus atributos</a></li>
+  <li><a href="#agregación-de-atributos-vectoriales" id="toc-agregación-de-atributos-vectoriales" class="nav-link" data-scroll-target="#agregación-de-atributos-vectoriales">Agregación de atributos vectoriales</a></li>
+  <li><a href="#unión-de-atributos-vectoriales" id="toc-unión-de-atributos-vectoriales" class="nav-link" data-scroll-target="#unión-de-atributos-vectoriales">Unión de atributos vectoriales</a></li>
+  <li><a href="#creación-de-atributos-y-eliminación-de-información-espacial" id="toc-creación-de-atributos-y-eliminación-de-información-espacial" class="nav-link" data-scroll-target="#creación-de-atributos-y-eliminación-de-información-espacial">Creación de atributos y eliminación de información espacial</a></li>
+  </ul></li>
+  <li><a href="#raster" id="toc-raster" class="nav-link" data-scroll-target="#raster">Raster</a>
+  <ul class="collapse">
+  <li><a href="#raster-subsetting" id="toc-raster-subsetting" class="nav-link" data-scroll-target="#raster-subsetting">Raster subsetting</a></li>
+  <li><a href="#resumen-de-objetos-raster" id="toc-resumen-de-objetos-raster" class="nav-link" data-scroll-target="#resumen-de-objetos-raster">Resumen de objetos raster</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Operaciones con atributos</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Modificado de <a href="https://r.geocompx.org/" class="uri">https://r.geocompx.org/</a> </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>Los atributos son la información no espacial asociada a la información geográfica o geometría.</p>
+<section id="vectores" class="level2">
+<h2 class="anchored" data-anchor-id="vectores">Vectores</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">methods</span>(<span class="at">class =</span> <span class="st">"sf"</span>) <span class="co"># methods for sf objects</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  [1] [                            [[&lt;-                        
+  [3] $&lt;-                          aggregate                   
+  [5] anti_join                    arrange                     
+  [7] as.data.frame                cbind                       
+  [9] coerce                       crs                         
+ [11] dbDataType                   dbWriteTable                
+ [13] distance                     distinct                    
+ [15] dplyr_reconstruct            duplicated                  
+ [17] ext                          extract                     
+ [19] filter                       full_join                   
+ [21] group_by                     group_split                 
+ [23] identify                     initialize                  
+ [25] inner_join                   left_join                   
+ [27] lines                        mask                        
+ [29] merge                        mutate                      
+ [31] plot                         points                      
+ [33] polys                        print                       
+ [35] rasterize                    rbind                       
+ [37] rename_with                  rename                      
+ [39] right_join                   rowwise                     
+ [41] sample_frac                  sample_n                    
+ [43] select                       semi_join                   
+ [45] show                         slice                       
+ [47] slotsFromS3                  st_agr                      
+ [49] st_agr&lt;-                     st_area                     
+ [51] st_as_s2                     st_as_sf                    
+ [53] st_as_sfc                    st_bbox                     
+ [55] st_boundary                  st_break_antimeridian       
+ [57] st_buffer                    st_cast                     
+ [59] st_centroid                  st_collection_extract       
+ [61] st_concave_hull              st_convex_hull              
+ [63] st_coordinates               st_crop                     
+ [65] st_crs                       st_crs&lt;-                    
+ [67] st_difference                st_drop_geometry            
+ [69] st_filter                    st_geometry                 
+ [71] st_geometry&lt;-                st_inscribed_circle         
+ [73] st_interpolate_aw            st_intersection             
+ [75] st_intersects                st_is_valid                 
+ [77] st_is                        st_join                     
+ [79] st_line_merge                st_m_range                  
+ [81] st_make_valid                st_minimum_rotated_rectangle
+ [83] st_nearest_points            st_node                     
+ [85] st_normalize                 st_point_on_surface         
+ [87] st_polygonize                st_precision                
+ [89] st_reverse                   st_sample                   
+ [91] st_segmentize                st_set_precision            
+ [93] st_shift_longitude           st_simplify                 
+ [95] st_snap                      st_sym_difference           
+ [97] st_transform                 st_triangulate_constrained  
+ [99] st_triangulate               st_union                    
+[101] st_voronoi                   st_wrap_dateline            
+[103] st_write                     st_z_range                  
+[105] st_zm                        summarise                   
+[107] svc                          transform                   
+[109] transmute                    ungroup                     
+[111] vect                        
+see '?methods' for accessing help and source code</code></pre>
+</div>
+</div>
+<p>Con los objetos sf también se pueden utilizar los métodos de tidyverse para data.frame, tbl_df y tbl. De este modo, sf permite explotar las capacidades de análisis de datos de R en los datos geográficos, tanto si se utilizan las funciones básicas de R como las de tidyverse para el análisis de datos.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sf"         "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 177  11</code></pre>
+</div>
+</div>
+<p>La función <code>st_drop_geometry()</code> conserva únicamente los atributos de un objeto sf, es decir, elimina su geometría.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>world_df <span class="ot">=</span> <span class="fu">st_drop_geometry</span>(world)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(world_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 10</code></pre>
+</div>
+</div>
+<p>Para muchas aplicaciones, el paquete tidyverse <code>dplyr</code> ofrece un enfoque eficaz para trabajar con los data frames. La compatibilidad con tidyverse es una ventaja de sf.</p>
+<section id="subdivisión-de-vectores-vía-sus-atributos" class="level3">
+<h3 class="anchored" data-anchor-id="subdivisión-de-vectores-vía-sus-atributos">Subdivisión de vectores vía sus atributos</h3>
+<p>Los métodos de subdivisión básicos de R incluyen el operador <code>[</code> y la función <code>subset()</code>, mientras que en el paquete dplyr, éstas son son <code>filter()</code> y <code>slice()</code> para filas, y <code>select()</code> para columnas. Ambos métodos conservan los componentes espaciales de los datos en los objetos sf, mientras que si se utiliza el operador <code>$</code> o la función dplyr <code>pull()</code> para devolver una única columna de atributos como vector, se perderán los datos geométricos.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>world[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, ]    <span class="co"># subset rows by position</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>world[, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]    <span class="co"># subset columns by position</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>world[<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>] <span class="co"># subset rows and columns by position</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>world[, <span class="fu">c</span>(<span class="st">"name_long"</span>, <span class="st">"pop"</span>)] <span class="co"># columns by name</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>world[, <span class="fu">c</span>(T, T, F, F, F, F, F, T, T, F, F)] <span class="co"># by logical indices</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>world[, <span class="dv">888</span>] <span class="co"># an index representing a non-existent column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Podemos usar vectores lógicos para seleccionar subconjuntos de datos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>i_small <span class="ot">=</span> world<span class="sc">$</span>area_km2 <span class="sc">&lt;</span> <span class="dv">10000</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(i_small) <span class="co"># a logical vector</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Mode   FALSE    TRUE 
+logical     170       7 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>small_countries <span class="ot">=</span> world[i_small, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>o más sencillamente:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>small_countries <span class="ot">=</span> world[world<span class="sc">$</span>area_km2 <span class="sc">&lt;</span> <span class="dv">10000</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La función <code>subset()</code> nos permite realizar la misma operación:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>small_countries <span class="ot">=</span> <span class="fu">subset</span>(world, area_km2 <span class="sc">&lt;</span> <span class="dv">10000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Las funciones de R base son maduras, estables y ampliamente utilizadas, lo que las convierte en una opción sólida, especialmente en contextos en los que la reproducibilidad y la fiabilidad son fundamentales. Las funciones de dplyr por su parte permiten flujos de trabajo “ordenados” o tidy que algunas personas consideran intuitivos y productivos para el análisis interactivo de datos. A continuación se muestran las funciones clave para hacer subset de data.frames con funciones dplyr.</p>
+<ul>
+<li><code>select()</code></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>world1 <span class="ot">=</span> <span class="fu">select</span>(world, name_long, pop)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(world1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "name_long" "pop"       "geom"     </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># all columns between name_long and pop (inclusive)</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>world2 <span class="ot">=</span> <span class="fu">select</span>(world, name_long<span class="sc">:</span>pop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><code>-</code> operator</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># all columns except subregion and area_km2 (inclusive)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>world3 <span class="ot">=</span> <span class="fu">select</span>(world, <span class="sc">-</span>subregion, <span class="sc">-</span>area_km2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><code>select()</code>: subset and rename</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>world4 <span class="ot">=</span> <span class="fu">select</span>(world, name_long, <span class="at">population =</span> pop)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>select() también funciona con “funciones de ayuda” para operaciones de subset más avanzadas, como <code>contains()</code>, <code>starts_with()</code> y <code>num_range()</code>.</p>
+<p>La mayoría de los verbos dplyr devuelven un data.frame, pero también se puede extraer una sola columna como un vector con <code>pull()</code>. Se puede obtener el mismo resultado en R base con los operadores <code>$</code> y <code>[[</code>, los tres comandos siguientes devuelven el mismo vector numérico:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pull</span>(world, pop)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>world<span class="sc">$</span>pop</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>world[[<span class="st">"pop"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><code>slice()</code> es el equivalente en filas de select(). El siguiente fragmento de código, por ejemplo, selecciona las filas 1 a 6:</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice</span>(world, <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="kable-table">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 6%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">iso_a2</th>
+<th style="text-align: left;">name_long</th>
+<th style="text-align: left;">continent</th>
+<th style="text-align: left;">region_un</th>
+<th style="text-align: left;">subregion</th>
+<th style="text-align: left;">type</th>
+<th style="text-align: right;">area_km2</th>
+<th style="text-align: right;">pop</th>
+<th style="text-align: right;">lifeExp</th>
+<th style="text-align: right;">gdpPercap</th>
+<th style="text-align: left;">geom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">FJ</td>
+<td style="text-align: left;">Fiji</td>
+<td style="text-align: left;">Oceania</td>
+<td style="text-align: left;">Oceania</td>
+<td style="text-align: left;">Melanesia</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">19289.97</td>
+<td style="text-align: right;">885806</td>
+<td style="text-align: right;">69.96000</td>
+<td style="text-align: right;">8222.254</td>
+<td style="text-align: left;">MULTIPOLYGON (((-180 -16.55…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TZ</td>
+<td style="text-align: left;">Tanzania</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Eastern Africa</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">932745.79</td>
+<td style="text-align: right;">52234869</td>
+<td style="text-align: right;">64.16300</td>
+<td style="text-align: right;">2402.099</td>
+<td style="text-align: left;">MULTIPOLYGON (((33.90371 -0…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">EH</td>
+<td style="text-align: left;">Western Sahara</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Africa</td>
+<td style="text-align: left;">Northern Africa</td>
+<td style="text-align: left;">Indeterminate</td>
+<td style="text-align: right;">96270.60</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">MULTIPOLYGON (((-8.66559 27…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CA</td>
+<td style="text-align: left;">Canada</td>
+<td style="text-align: left;">North America</td>
+<td style="text-align: left;">Americas</td>
+<td style="text-align: left;">Northern America</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">10036042.98</td>
+<td style="text-align: right;">35535348</td>
+<td style="text-align: right;">81.95305</td>
+<td style="text-align: right;">43079.143</td>
+<td style="text-align: left;">MULTIPOLYGON (((-132.71 54….</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">US</td>
+<td style="text-align: left;">United States</td>
+<td style="text-align: left;">North America</td>
+<td style="text-align: left;">Americas</td>
+<td style="text-align: left;">Northern America</td>
+<td style="text-align: left;">Country</td>
+<td style="text-align: right;">9510743.74</td>
+<td style="text-align: right;">318622525</td>
+<td style="text-align: right;">78.84146</td>
+<td style="text-align: right;">51921.985</td>
+<td style="text-align: left;">MULTIPOLYGON (((-171.7317 6…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KZ</td>
+<td style="text-align: left;">Kazakhstan</td>
+<td style="text-align: left;">Asia</td>
+<td style="text-align: left;">Asia</td>
+<td style="text-align: left;">Central Asia</td>
+<td style="text-align: left;">Sovereign country</td>
+<td style="text-align: right;">2729810.51</td>
+<td style="text-align: right;">17288285</td>
+<td style="text-align: right;">71.62000</td>
+<td style="text-align: right;">23587.338</td>
+<td style="text-align: left;">MULTIPOLYGON (((87.35997 49…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<ul>
+<li><code>filter()</code> es el equivalente de dplyr a la función subset() de R base. Mantiene sólo las filas que coinciden con los criterios dados, por ejemplo, sólo los países con un área por debajo de un cierto umbral, o con un alto promedio de esperanza de vida:</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>world7 <span class="ot">=</span> <span class="fu">filter</span>(world, area_km2 <span class="sc">&lt;</span> <span class="dv">10000</span>)  <span class="co"># countries with a small area</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>world7 <span class="ot">=</span> <span class="fu">filter</span>(world, lifeExp <span class="sc">&gt;</span> <span class="dv">82</span>)      <span class="co"># with high life expectancy</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La clave de los flujos de trabajo que utilizan funciones <strong>dplyr</strong> es el operador <a href="http://r4ds.had.co.nz/pipes.html">‘pipe’</a> <code>%&gt;%</code> (o desde R <code>4.1.0</code> la tubería nativa <code>|&gt;</code>), que toma su nombre del pipe de Unix <code>|</code>. Los pipes permiten un código expresivo: la salida de una función se convierte en el primer argumento de la siguiente función, permitiendo el <em>encadenamiento</em>. Esto se ilustra a continuación donde sólo se filtran los países de Asia del conjunto de datos <code>world</code>, a continuación el objeto se subdivide por columnas (<code>nombre_largo</code> y <code>continente</code>) y se extraen las cinco primeras filas.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>world7 <span class="ot">=</span> world <span class="sc">|&gt;</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(continent <span class="sc">==</span> <span class="st">"Asia"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_long, continent) <span class="sc">|&gt;</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Lo de arriba puede también expresarse como funciones anidadas, aunque es más difícil de leer:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>world8 <span class="ot">=</span> <span class="fu">slice</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(world, continent <span class="sc">==</span> <span class="st">"Asia"</span>),</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    name_long, continent),</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="agregación-de-atributos-vectoriales" class="level3">
+<h3 class="anchored" data-anchor-id="agregación-de-atributos-vectoriales">Agregación de atributos vectoriales</h3>
+<p>La agregación consiste en resumir los datos con una o varias “variables de agrupación”, normalmente a partir de columnas de la tabla de datos que se desea agregar. Un ejemplo de agregación de atributos es calcular el número de personas por continente a partir de datos a nivel de país (una fila por país). El conjunto de datos <code>world</code> contiene los ingredientes necesarios: las columnas <code>pop</code> y <code>continent</code>, la población y la variable de agrupación, respectivamente. El objetivo es hallar la <code>sum()</code> de las poblaciones de los países para cada continente, lo que da como resultado un data.frame más pequeño. Esto se puede hacer con la función base de R <code>aggregate()</code> de la siguiente manera:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>world_agg1 <span class="ot">=</span> <span class="fu">aggregate</span>(pop <span class="sc">~</span> continent, <span class="at">FUN =</span> sum, <span class="at">data =</span> world, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world_agg1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "data.frame"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(world_agg1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="kable-table">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">continent</th>
+<th style="text-align: right;">pop</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Africa</td>
+<td style="text-align: right;">1154946633</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Asia</td>
+<td style="text-align: right;">4311408059</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Europe</td>
+<td style="text-align: right;">669036256</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">North America</td>
+<td style="text-align: right;">565028684</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oceania</td>
+<td style="text-align: right;">37757833</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">South America</td>
+<td style="text-align: right;">412060811</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p><code>aggregate()</code> es una <a href="https://adv-r.hadley.nz/s3.html#s3-methods">función genérica</a> lo que significa que se comporta de forma diferente dependiendo de sus entradas. <strong>sf</strong> proporciona el método <code>aggregate.sf()</code> que se activa automáticamente cuando <code>x</code> es un objeto <code>sf</code> y se proporciona un argumento <code>by</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>world_agg2 <span class="ot">=</span> <span class="fu">aggregate</span>(world[<span class="st">"pop"</span>], <span class="fu">list</span>(world<span class="sc">$</span>continent), </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">FUN =</span> sum, </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world_agg2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sf"         "data.frame"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(world_agg2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8</code></pre>
+</div>
+</div>
+<p>El objeto resultante <code>world_agg2</code> es un objeto espacial que contiene 8 características que representan los continentes del mundo.</p>
+<p>La función <code>group_by() |&gt; summarize()</code> es el equivalente <strong>dplyr</strong> de <code>aggregate()</code>, con el nombre de la variable proporcionada en la función <code>group_by()</code> especificando la variable de agrupación y la información sobre lo que se va a resumir pasada a la función <code>summarize()</code>, como se muestra a continuación:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>world_agg3 <span class="ot">=</span> world <span class="sc">|&gt;</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(continent) <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">pop =</span> <span class="fu">sum</span>(pop, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Este enfoque puede parecer más complejo, pero tiene ventajas: flexibilidad, legibilidad y control sobre los nuevos nombres de las columnas. Esta flexibilidad se ilustra en el comando siguiente, que calcula no sólo la población, sino también la superficie y el número de países de cada continente:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>world_agg4  <span class="ot">=</span> world <span class="sc">|&gt;</span> </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(continent) <span class="sc">|&gt;</span> </span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Pop =</span> <span class="fu">sum</span>(pop, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">Area =</span> <span class="fu">sum</span>(area_km2), <span class="at">N =</span> <span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>En el trozo de código anterior <code>Pop</code>, <code>Area</code> y <code>N</code> son nombres de columnas en el resultado, y <code>sum()</code> y <code>n()</code> las funciones de agregación. Estas funciones de agregación devuelven objetos <code>sf</code> con filas que representan continentes y geometrías que contienen los múltiples polígonos que representan cada masa de tierra y las islas asociadas (esto funciona gracias a la operación geométrica <code>union</code>, como se explica más abajo.</p>
+<p>Combinemos lo que hemos aprendido hasta ahora sobre las funciones <strong>dplyr</strong>, encadenando múltiples comandos para resumir datos de atributos sobre países de todo el mundo por continentes. El siguiente comando calcula la densidad de población (con <code>mutate()</code>), ordena los continentes por el número de países que contienen (con <code>dplyr::arrange()</code>), y mantiene sólo los 3 continentes más poblados (con <code>dplyr::slice_max()</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>world_agg5 <span class="ot">=</span> world <span class="sc">|&gt;</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span>                      <span class="co"># drop the geometry for speed</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(pop, continent, area_km2) <span class="sc">|&gt;</span> <span class="co"># subset the columns of interest  </span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(continent) <span class="sc">|&gt;</span>                     <span class="co"># group by continent and summarize:</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Pop =</span> <span class="fu">sum</span>(pop, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">Area =</span> <span class="fu">sum</span>(area_km2), <span class="at">N =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Density =</span> <span class="fu">round</span>(Pop <span class="sc">/</span> Area)) <span class="sc">|&gt;</span>     <span class="co"># calculate population density</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(Pop, <span class="at">n =</span> <span class="dv">3</span>) <span class="sc">|&gt;</span>                   <span class="co"># keep only the top 3</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(N))                           <span class="co"># arrange in order of n. countries</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  world_agg5,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption =</span> <span class="st">"The top 3 most populous continents ordered by number of countries."</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption.short =</span> <span class="st">"Top 3 most populous continents."</span>,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">booktabs =</span> <span class="cn">TRUE</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>The top 3 most populous continents ordered by number of countries.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">continent</th>
+<th style="text-align: right;">Pop</th>
+<th style="text-align: right;">Area</th>
+<th style="text-align: right;">N</th>
+<th style="text-align: right;">Density</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Africa</td>
+<td style="text-align: right;">1154946633</td>
+<td style="text-align: right;">29946198</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">39</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Asia</td>
+<td style="text-align: right;">4311408059</td>
+<td style="text-align: right;">31252459</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">138</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Europe</td>
+<td style="text-align: right;">669036256</td>
+<td style="text-align: right;">23065219</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">29</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="unión-de-atributos-vectoriales" class="level3">
+<h3 class="anchored" data-anchor-id="unión-de-atributos-vectoriales">Unión de atributos vectoriales</h3>
+<p>Combinar datos de distintas fuentes es una tarea habitual en la preparación de datos. Las uniones lo hacen combinando tablas basadas en una variable “clave” o key compartida. <strong>dplyr</strong> tiene múltiples funciones de unión, incluyendo <code>left_join()</code> y <code>inner_join()</code> — ver <code>vignette("two-table")</code> para una lista completa. Los nombres de estas funciones siguen las convenciones utilizadas en el lenguaje de bases de datos <a href="http://r4ds.had.co.nz/relational-data.html">SQL</a>; su uso para unir conjuntos de datos no espaciales a objetos <code>sf</code> es el objetivo de esta sección. Las funciones join de <strong>dplyr</strong> funcionan igual en data.frames y objetos <code>sf</code>, la única diferencia importante es la columna <code>geometry</code>. El resultado de las uniones de datos puede ser un objeto <code>sf</code> o un <code>data.frame</code>. El tipo más común de unión de atributos en datos espaciales toma un objeto <code>sf</code> como primer argumento y le añade columnas de un <code>data.frame</code> especificado como segundo argumento.</p>
+<p>Para demostrar las uniones, combinaremos datos sobre la producción de café con el conjunto de datos <code>world</code>. Los datos sobre el café se encuentran en un data.frame denominado <code>coffee_data</code> del paquete <strong>spData</strong>. Tiene 3 columnas: <code>name_long</code> nombra las principales naciones productoras de café y <code>coffee_production_2016</code> y <code>coffee_production_2017</code> contienen valores estimados para la producción de café en bolsas de 60 kg en cada año. Un “left join”, que conserva el primer conjunto de datos, combina “world” con “coffee_data”:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>world_coffee <span class="ot">=</span> <span class="fu">left_join</span>(world, coffee_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(name_long)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world_coffee)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sf"         "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+</div>
+<p>Dado que los conjuntos de datos de entrada comparten una “key” (<code>name_long</code>), la unión funcionó sin utilizar el argumento <code>by</code> (véase <code>?left_join</code> para más detalles). El resultado es un objeto <code>sf</code> idéntico al objeto <code>world</code> original, pero con dos nuevas variables (con índices de columna 11 y 12) sobre la producción de café. Esto puede representarse como un mapa, tal y como se ilustra en la Figura (fig:coffeemap), generada con la función <code>plot()</code> que se muestra a continuación:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(world_coffee)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "iso_a2"                 "name_long"              "continent"             
+ [4] "region_un"              "subregion"              "type"                  
+ [7] "area_km2"               "pop"                    "lifeExp"               
+[10] "gdpPercap"              "geom"                   "coffee_production_2016"
+[13] "coffee_production_2017"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(world_coffee[<span class="st">"coffee_production_2017"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="operaciones_con_atributos_files/figure-html/coffeemap-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption class="figure-caption">World coffee production (thousand 60-kg bags) by country, 2017. Source: International Coffee Organization.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Para que la unión funcione, se debe proporcionar una columna “key” en ambos conjuntos de datos. Por defecto, <strong>dplyr</strong> utiliza todas las variables con nombres coincidentes. En este caso, los objetos <code>world_coffee</code> y <code>world</code> contienen una variable llamada <code>name_long</code>, lo que explica el mensaje <code>Joining with</code>by = join_by(name_long)``. En la mayoría de los casos en los que los nombres de las variables no coinciden, hay dos opciones:</p>
+<ol type="1">
+<li>Cambiar el nombre de la variable clave en uno de los objetos para que coincidan.</li>
+<li>Utilizar el argumento <code>by</code> para especificar las variables de unión.</li>
+</ol>
+<p>Este último enfoque se demuestra a continuación en una versión renombrada de <code>coffee_data</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>coffee_renamed <span class="ot">=</span> <span class="fu">rename</span>(coffee_data, <span class="at">nm =</span> name_long)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>world_coffee2 <span class="ot">=</span> <span class="fu">left_join</span>(world, coffee_renamed, <span class="at">by =</span> <span class="fu">join_by</span>(name_long <span class="sc">==</span> nm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Observe que se mantiene el nombre en el objeto original, lo que significa que <code>world_coffee</code> y el nuevo objeto <code>world_coffee2</code> son idénticos. Otra característica del resultado es que tiene el mismo número de filas que el conjunto de datos original. Aunque sólo hay 47 filas de datos en <code>coffee_data</code>, los 177 registros de países se mantienen intactos en <code>world_coffee</code> y <code>world_coffee2</code>: A las filas del conjunto de datos original que no coinciden se les asignan valores <code>NA</code> para las nuevas variables de producción de café. ¿Qué ocurre si sólo queremos conservar los países que tienen una coincidencia en la variable key?</p>
+<p>En ese caso, se puede utilizar una unión interna:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>world_coffee_inner <span class="ot">=</span> <span class="fu">inner_join</span>(world, coffee_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(name_long)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(world_coffee_inner)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 45</code></pre>
+</div>
+</div>
+<p>Observe que el resultado de <code>inner_join()</code> sólo tiene 45 filas frente a las 47 de <code>coffee_data</code>. ¿Qué ha pasado con las filas restantes? Podemos identificar las filas que no coinciden utilizando la función <code>setdiff()</code> de la siguiente manera:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setdiff</span>(coffee_data<span class="sc">$</span>name_long, world<span class="sc">$</span>name_long)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Congo, Dem. Rep. of" "Others"             </code></pre>
+</div>
+</div>
+<p>El resultado muestra que <code>Otros</code> representa una fila que no está presente en el conjunto de datos <code>world</code> y que el nombre de la <code>Democratic Republic of the Congo</code> representa la otra: se ha abreviado, lo que hace que la unión no lo encuentre. El siguiente comando utiliza una función de concordancia de cadenas (<em>regex</em>) del paquete <strong>stringr</strong> para confirmar cuál debería ser <code>Congo, Rep. Dem. of</code> debería ser:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>drc <span class="ot">=</span> stringr<span class="sc">::</span><span class="fu">str_subset</span>(world<span class="sc">$</span>name_long, <span class="st">"Dem*.+Congo"</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>drc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Democratic Republic of the Congo"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># aim: test names in coffee_data and world objects</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>stringr<span class="sc">::</span><span class="fu">str_subset</span>(coffee_data<span class="sc">$</span>name_long, <span class="st">"Ivo|Congo,"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Congo, Dem. Rep. of" "Côte d'Ivoire"      </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>.Last.value <span class="sc">%in%</span> stringr<span class="sc">::</span><span class="fu">str_subset</span>(world<span class="sc">$</span>name_long, <span class="st">"Ivo|Dem*.+Congo"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>logical(0)</code></pre>
+</div>
+</div>
+<p>Para solucionar este problema, crearemos una nueva versión de <code>coffee_data</code> y actualizaremos el nombre. Si unimos el data.frame actualizado con <code>inner_join()</code>, obtendremos un resultado con las 46 naciones productoras de café:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>coffee_data<span class="sc">$</span>name_long[<span class="fu">grepl</span>(<span class="st">"Congo,"</span>, coffee_data<span class="sc">$</span>name_long)] <span class="ot">=</span> drc</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>world_coffee_match <span class="ot">=</span> <span class="fu">inner_join</span>(world, coffee_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(name_long)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(world_coffee_match)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 46</code></pre>
+</div>
+</div>
+<p>También es posible unir en la otra dirección: empezar con un conjunto de datos no espaciales y añadir variables de un objeto sf. Esto se demuestra a continuación, se comienza con el objeto <code>coffee_data</code> y se añaden variables del conjunto de datos <code>world</code>. En contraste con las uniones anteriores, el resultado <em>no</em> es un sf, sino un data.frame en forma de <strong>tidyverse</strong> tibble: el resultado de una unión tiende a coincidir con su primer argumento:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>coffee_world <span class="ot">=</span> <span class="fu">left_join</span>(coffee_data, world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(name_long)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(coffee_world)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>En la mayoría de los casos, la columna de geometría sólo es útil en un objeto <code>sf</code>. La columna de geometría sólo se puede utilizar para crear mapas y operaciones espaciales si R “sabe” que es un objeto espacial, definido por un paquete espacial como <strong>sf</strong>. Afortunadamente, los marcos de datos no espaciales con una columna de lista de geometría (como <code>coffee_world</code>) pueden coaccionarse en un objeto <code>sf</code> de la siguiente manera: <code>st_as_sf(coffee_world)</code>.</p>
+</div>
+</div>
+</section>
+<section id="creación-de-atributos-y-eliminación-de-información-espacial" class="level3">
+<h3 class="anchored" data-anchor-id="creación-de-atributos-y-eliminación-de-información-espacial">Creación de atributos y eliminación de información espacial</h3>
+<p>A menudo, nos gustaría crear una nueva columna basada en columnas ya existentes. Por ejemplo, queremos calcular la densidad de población de cada país. Para ello necesitamos dividir una columna de población, aquí <code>pop</code>, por una columna de área, aquí <code>area_km2</code> con unidad de área en kilómetros cuadrados. Usando R base, podemos escribir:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>world_new <span class="ot">=</span> world <span class="co"># do not overwrite our original data</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>world_new<span class="sc">$</span>pop_dens <span class="ot">=</span> world_new<span class="sc">$</span>pop <span class="sc">/</span> world_new<span class="sc">$</span>area_km2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Alternativamente, podemos utilizar una de las funciones de <strong>dplyr</strong> - <code>mutate()</code> o <code>transmute()</code>. La función <code>mutate()</code> añade nuevas columnas en la penúltima posición del objeto <code>sf</code> (la última se reserva para la geometría):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>world_new2 <span class="ot">=</span> world <span class="sc">|&gt;</span> </span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pop_dens =</span> pop <span class="sc">/</span> area_km2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La diferencia entre <code>mutate()</code> y <code>transmute()</code> es que esta última elimina todas las demás columnas existentes (excepto la columna de geometría).</p>
+<p>La función <code>unite()</code> del paquete <strong>tidyr</strong> (que proporciona muchas funciones útiles para remodelar conjuntos de datos, incluida <code>pivot_longer()</code>) pega las columnas existentes. Por ejemplo, queremos combinar las columnas <code>continent</code> y <code>region_un</code> en una nueva columna llamada <code>con_reg</code>. Además, podemos definir un separador (aquí: dos puntos <code>:</code>) que define cómo deben unirse los valores de las columnas de entrada, y si deben eliminarse las columnas originales (aquí: <code>TRUE</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>world_unite <span class="ot">=</span> world <span class="sc">|&gt;</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unite</span>(<span class="st">"con_reg"</span>, continent<span class="sc">:</span>region_un, <span class="at">sep =</span> <span class="st">":"</span>, <span class="at">remove =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El objeto <code>sf</code> resultante tiene una nueva columna llamada <code>con_reg</code> que representa el continente y la región de cada país, por ejemplo <code>South America:Americas</code> para Argentina y otros países de Sudamérica.</p>
+<p>La función <code>separate()</code> de <strong>tidyr</strong> hace lo contrario que <code>unite()</code>: divide una columna en varias columnas utilizando una expresión regular o posiciones de caracteres.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>world_separate <span class="ot">=</span> world_unite <span class="sc">|&gt;</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">separate</span>(con_reg, <span class="fu">c</span>(<span class="st">"continent"</span>, <span class="st">"region_un"</span>), <span class="at">sep =</span> <span class="st">":"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Cada una de estas operaciones de datos de atributos conserva la geometría de las características simples. A veces tiene sentido eliminar la geometría, por ejemplo para acelerar la agregación. Hágalo con <code>st_drop_geometry()</code>, <strong>no</strong> manualmente con comandos como <code>select(world, -geom)</code>, como se muestra a continuación.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>world_data <span class="ot">=</span> world <span class="sc">|&gt;</span> <span class="fu">st_drop_geometry</span>()</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(world_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="raster" class="level2">
+<h2 class="anchored" data-anchor-id="raster">Raster</h2>
+<p>A diferencia del modelo de datos vectoriales subyacente a sf (que representa puntos, líneas y polígonos como entidades discretas en el espacio), los datos ráster representan superficies continuas. Esta sección muestra cómo funcionan los objetos ráster creándolos <em>desde cero</em> con el paquete terra. Debido a su estructura única, la subdivisión o subset y otras operaciones en conjuntos de datos ráster funcionan de una manera diferente.</p>
+<p>El siguiente código recrea el conjunto de datos ráster utilizado en el apartado anterior. Esto demuestra cómo funciona la función <code>rast()</code> para crear un raster de ejemplo llamado <code>elev</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>elev <span class="ot">=</span> <span class="fu">rast</span>(<span class="at">nrows =</span> <span class="dv">6</span>, <span class="at">ncols =</span> <span class="dv">6</span>,</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>            <span class="at">xmin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">xmax =</span> <span class="fl">1.5</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">ymax =</span> <span class="fl">1.5</span>,</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">vals =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">36</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El resultado es un objeto raster con 6 filas y 6 columnas (especificadas por los argumentos <code>nrow</code> y <code>ncol</code>), y una extensión espacial mínima y máxima en dirección x e y (<code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>). El argumento <code>vals</code> establece los valores que contiene cada celda.</p>
+<p>Los objetos raster también pueden contener valores categóricos de la clase <code>logical</code> o variables <code>factor</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>grain_order <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"clay"</span>, <span class="st">"silt"</span>, <span class="st">"sand"</span>)</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>grain_char <span class="ot">=</span> <span class="fu">sample</span>(grain_order, <span class="dv">36</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>grain_fact <span class="ot">=</span> <span class="fu">factor</span>(grain_char, <span class="at">levels =</span> grain_order)</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>grain <span class="ot">=</span> <span class="fu">rast</span>(<span class="at">nrows =</span> <span class="dv">6</span>, <span class="at">ncols =</span> <span class="dv">6</span>, </span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">xmin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">xmax =</span> <span class="fl">1.5</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="fl">1.5</span>, <span class="at">ymax =</span> <span class="fl">1.5</span>,</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">vals =</span> grain_fact)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El objeto ráster almacena la correspondiente tabla de consulta o “Raster Attribute Table” (RAT) como una lista de data.frames, que pueden visualizarse con <code>cats(grain)</code> (véase <code>?cats()</code> para más información). Cada elemento de esta lista es una capa del raster. También es posible utilizar la función <code>levels()</code> para recuperar y añadir nuevos niveles de factor o sustituir los existentes:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(grain) <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">value =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>), <span class="at">wetness =</span> <span class="fu">c</span>(<span class="st">"wet"</span>, <span class="st">"moist"</span>, <span class="st">"dry"</span>))</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(grain)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+  value wetness
+1     0     wet
+2     1   moist
+3     2     dry</code></pre>
+</div>
+</div>
+<div class="cell" data-fig.asp="0.5">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="operaciones_con_atributos_files/figure-html/cont-raster-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption class="figure-caption">Raster datasets with numeric (left) and categorical values (right).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Los objetos ráster categóricos también pueden almacenar información sobre los colores asociados a cada valor utilizando una tabla de colores. La tabla de colores es un marco de datos con tres (rojo, verde, azul) o cuatro (alfa) columnas, donde cada fila se refiere a un valor. Las tablas de color en <strong>terra</strong> pueden verse o establecerse con la función <code>coltab()</code> (ver <code>?coltab</code>). Es importante destacar que, al guardar un objeto ráster con una tabla de colores en un archivo (por ejemplo, GeoTIFF), también se guardará la información de color.</p>
+</div>
+</div>
+<section id="raster-subsetting" class="level3">
+<h3 class="anchored" data-anchor-id="raster-subsetting">Raster subsetting</h3>
+<p>El subconjunto raster se realiza con el operador base de R <code>[</code>, que acepta una variedad de entradas:</p>
+<ul>
+<li>Indexación fila-columna</li>
+<li>ID de celda</li>
+<li>Coordenadas</li>
+<li>Otro objeto espacial</li>
+</ul>
+<p>Aquí sólo mostramos las dos primeras opciones, ya que pueden considerarse operaciones no espaciales. Si necesitamos un objeto espacial para subdividir otro o la salida es un objeto espacial, nos referiremos a esto como subset espacial. Por lo tanto, estas dos últimas opciones se mostrarán en el próximo capítulo.</p>
+<p>Las dos primeras opciones de subconjunto se muestran en los siguientes comandos — ambos devuelven el valor del píxel superior izquierdo en el objeto ráster <code>elev</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="co"># row 1, column 1</span></span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>elev[<span class="dv">1</span>, <span class="dv">1</span>]</span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cell ID 1</span></span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>elev[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Subdividir objetos ráster multicapa devolverá los valores de las celdas de cada capa. Por ejemplo, <code>two_layers = c(grain, elev); two_layers[1]</code> devuelve un marco de datos con una fila y dos columnas — una para cada capa. Para extraer todos los valores o filas completas, también puede utilizar <code>values()</code>.</p>
+<p>Los valores de las celdas pueden modificarse sobrescribiendo los valores existentes junto con una operación de subconjunto. El siguiente fragmento de código, por ejemplo, establece la celda superior izquierda de <code>elev</code> a 0:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>elev[<span class="dv">1</span>, <span class="dv">1</span>] <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>elev[]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Dejar los corchetes vacíos es una versión abreviada de <code>values()</code> para recuperar todos los valores de una capa. También se pueden modificar múltiples celdas de esta forma:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>elev[<span class="dv">1</span>, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>)] <span class="ot">=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="resumen-de-objetos-raster" class="level3">
+<h3 class="anchored" data-anchor-id="resumen-de-objetos-raster">Resumen de objetos raster</h3>
+<p><strong>terra</strong> contiene funciones para extraer estadísticas descriptivas de rásters enteros. Al imprimir un objeto raster en la consola escribiendo su nombre, se obtienen los valores mínimo y máximo de un raster.</p>
+<p><code>summary()</code> proporciona estadísticas descriptivas comunesindex{statistics} – mínimo, máximo, cuartiles y número de <code>NA</code>s para rásters continuos y un número de celdas de cada clase para rásters categóricos.</p>
+<p>Otras operaciones de resumen, como la desviación estándar (véase más adelante) o estadísticas de resumen personalizadas, pueden calcularse con <code>global()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="fu">global</span>(elev, sd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you provide the <code>summary()</code> and <code>global()</code> functions with a multi-layered raster object, they will summarize each layer separately, as can be illustrated by running: <code>summary(c(elev, grain))</code>.</p>
+</div>
+</div>
+<p>Además, la función <code>freq()</code> permite obtener la tabla de frecuencias de valores categóricos.</p>
+<p>Las estadísticas de valores raster pueden visualizarse de varias formas. Funciones específicas como <code>boxplot()</code>, <code>density()</code>, <code>hist()</code> y <code>pairs()</code> funcionan también con objetos raster, como se demuestra en el histograma creado con el comando siguiente (no mostrado):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(elev, <span class="at">breaks=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="operaciones_con_atributos_files/figure-html/unnamed-chunk-48-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p> <code>st_geometry(world_st) = NULL</code> también funciona para eliminar la geometría de <code>world</code>, pero sobrescribe el objeto original.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

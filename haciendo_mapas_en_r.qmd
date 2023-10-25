@@ -1,6 +1,11 @@
 ---
 title: "Making maps in R"
-format: html
+author: "Veronica Andreo"
+date: today
+format: 
+  html:
+    toc: true
+    df-print: kable
 ---
 
 # Making maps with R {#adv-map}
