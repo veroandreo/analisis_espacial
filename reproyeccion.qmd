@@ -1,6 +1,10 @@
 ---
 title: "Reproyeccion"
-format: html
+author: "Modificado de <https://r.geocompx.org/>"
+format: 
+  html:
+    toc: true
+    df-print: kable
 ---
 
 # Reprojecting geographic data {#reproj-geo-data}

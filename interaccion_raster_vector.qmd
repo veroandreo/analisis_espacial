@@ -1,7 +1,6 @@
 ---
 title: "Interacciones raster-vector"
-author: "Veronica Andreo"
-date: today
+author: "Modificado de <https://r.geocompx.org/>"
 format: 
   html:
     toc: true

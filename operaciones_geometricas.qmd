@@ -1,16 +1,13 @@
 ---
 title: "Operaciones geométricas"
-format: html
+author: "Modificado de <https://r.geocompx.org/>"
+format: 
+  html:
+    toc: true
+    df-print: kable
 ---
 
-
-# Geometry operations {#geometry-operations}
-
-## Prerequisites {-}
-
-- This chapter uses the same packages as Chapter \@ref(spatial-operations) but with the addition of **spDataLarge**, which was installed in Chapter \@ref(spatial-class):
-
-```{r 05-geometry-operations-1, message=FALSE}
+```{r, message=FALSE}
 library(sf)
 library(terra)
 library(dplyr)
