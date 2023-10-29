@@ -15,7 +15,7 @@ website:
         href: https://github.com/veroandreo/analisis_espacial
     left:
       # - text: Presentación 1
-      #   href: 
+      #   href: aca presentacion pablo
       - text: Lectura complementaria
         href: lc_index.qmd
       - menu:
