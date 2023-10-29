@@ -7,43 +7,33 @@ format:
     df-print: kable
 ---
 
-# Raster-vector interactions {#raster-vector}
 
-## Prerequisites {.unnumbered}
-
-- This chapter requires the following packages:
-
-```{r 06-raster-vector-1, message=FALSE}
+```{r, message=FALSE}
 library(sf)
 library(terra)
 library(dplyr)
 ```
 
-## Introduction
+## Introducción
 
-\index{raster-vector interactions} 
-This Chapter focuses on interactions between raster and vector geographic data models, introduced in Chapter \@ref(spatial-class).
-It includes four main techniques:
-raster cropping and masking using vector objects (Section \@ref(raster-cropping));
-extracting raster values using different types of vector data (Section \@ref(raster-extraction));
-and raster-vector conversion (Sections \@ref(rasterization) and \@ref(spatial-vectorization)).
-The above concepts are demonstrated using data used in previous chapters to understand their potential real-world applications.
+Este capítulo se centra en las interacciones entre los modelos de datos geográficos ráster y vectoriales.
+Incluye cuatro técnicas principales: recorte y enmascaramiento ráster utilizando objetos vectoriales;
+extracción de valores ráster utilizando diferentes tipos de datos vectoriales; y conversión ráster-vector. 
 
-## Raster cropping
+## Recorte 
 
-\index{raster cropping} 
-Many geographic data projects involve integrating data from many different sources, such as remote sensing images (rasters) and administrative boundaries (vectors).
-Often the extent of input raster datasets is larger than the area of interest.
-In this case, raster **cropping** and **masking** are useful for unifying the spatial extent of input data.
-Both operations reduce object memory use and associated computational resources for subsequent analysis steps, and may be a necessary preprocessing step before creating attractive maps involving raster data.
+Muchos proyectos de datos geográficos implican la integración de datos de muchas fuentes diferentes, como imágenes de teledetección (rásters) y límites administrativos (vectores).
+A menudo, la extensión de los conjuntos de datos ráster de entrada es mayor que el área de interés.
+En este caso, el **recorte** y el **enmascaramiento** ráster son útiles para unificar la extensión espacial de los datos de entrada.
+Ambas operaciones reducen el uso de memoria del objeto y los recursos computacionales asociados para los pasos de análisis posteriores, y pueden ser un paso de preprocesamiento necesario antes de crear mapas atractivos que incluyan datos ráster.
 
-We will use two objects to illustrate raster cropping:
+Utilizaremos dos objetos para ilustrar el recorte raster:
 
-- A `SpatRaster` object `srtm` representing elevation (meters above sea level) in south-western Utah
-- A vector (`sf`) object `zion` representing Zion National Park
+- Un objeto `SpatRaster` `srtm` que representa la elevación (metros sobre el nivel del mar) en el suroeste de Utah
+- Un objeto vectorial (`sf`) `zion` que representa el Parque Nacional de Zion.
 
-Both target and cropping objects must have the same projection.
-The following code chunk therefore not only reads the datasets from the **spDataLarge** package installed in Chapter \@ref(spatial-class), it also 'reprojects' `zion` (a topic covered in Chapter \@ref(reproj-geo-data)):
+Tanto el objeto de destino como el de recorte deben tener la misma proyección.
+Por lo tanto, el siguiente fragmento de código no sólo lee los conjuntos de datos del paquete **spDataLarge**, sino que también "reproyecta" `zion`:
 
 ```{r 06-raster-vector-2, results='hide'}
 srtm = rast(system.file("raster/srtm.tif", package = "spDataLarge"))
@@ -51,32 +41,30 @@ zion = read_sf(system.file("vector/zion.gpkg", package = "spDataLarge"))
 zion = st_transform(zion, crs(srtm))
 ```
 
-We use `crop()` from the **terra** package to crop the `srtm` raster.
-The function reduces the rectangular extent of the object passed to its first argument based on the extent of the object passed to its second argument.
-This functionality is demonstrated in the command below, which generates Figure \@ref(fig:cropmask)(B):
+Utilizamos `crop()` del paquete **terra** para recortar `srtm`.
+La función reduce la extensión rectangular del objeto pasado como primer argumento en función de la extensión del objeto pasado como segundo argumento.
 
 ```{r 06-raster-vector-3 }
 srtm_cropped = crop(srtm, zion)
 ```
 
-\index{raster masking} 
-Related to `crop()` is the **terra** function `mask()`, which sets values outside of the bounds of the object passed to its second argument to `NA`.
-The following command therefore masks every cell outside of the Zion National Park boundaries (Figure \@ref(fig:cropmask)(C)):
+Relacionada con `crop()` está la función **terra** `mask()`, que establece como `NA` los valores fuera de los límites del objeto pasado a su segundo argumento.
+Por tanto, el siguiente comando enmascara todas las celdas situadas fuera de los límites del Parque Nacional de Zion:
 
 ```{r 06-raster-vector-4 }
 srtm_masked = mask(srtm, zion)
 ```
 
-Importantly, we want to use both `crop()` and `mask()` together in most cases. 
-This combination of functions would (a) limit the raster's extent to our area of interest and then (b) replace all of the values outside of the area to NA.
+Es importante destacar que, en la mayoría de los casos, se recomienda utilizar conjuntamente las funciones `crop()` y `mask()`. 
+Esta combinación de funciones (a) limitaría la extensión del raster a nuestra área de interés y (b) reemplazaría todos los valores fuera del área a NA.
 
 ```{r 06-raster-vector-5}
 srtm_cropped = crop(srtm, zion)
 srtm_final = mask(srtm_cropped, zion)
 ```
 
-Changing the settings of `mask()` yields different results.
-Setting `inverse = TRUE` will mask everything *inside* the bounds of the park (see `?mask` for details) (Figure \@ref(fig:cropmask)(D)), while setting `updatevalue = 0` will set all pixels outside the national park to 0.
+Cambiando la configuración de `mask()` se obtienen resultados diferentes.
+Si se establece `inverse = TRUE` se enmascarará todo lo que esté *dentro* de los límites del parque (véase `?mask` para más detalles), mientras que si se establece `updatevalue = 0` se pondrán a 0 todos los píxeles fuera del parque nacional.
 
 ```{r 06-raster-vector-6 }
 #| message: FALSE
@@ -84,7 +72,7 @@ Setting `inverse = TRUE` will mask everything *inside* the bounds of the park (s
 srtm_inv_masked = mask(srtm, zion, inverse = TRUE)
 ```
 
-```{r cropmask, echo = FALSE, fig.cap="Illustration of raster cropping and raster masking.", fig.asp=0.36, fig.width = 10, warning=FALSE}
+```{r cropmask, echo = FALSE, fig.cap="Illustration of raster cropping and raster masking.", fig.asp=0.36, fig.width = 10, warning=FALSE, message=FALSE}
 library(tmap)
 library(rcartocolor)
 terrain_colors = carto_pal(7, "Geyser")
@@ -115,18 +103,16 @@ pz4 = tm_shape(srtm_inv_masked) +
 tmap_arrange(pz1, pz2, pz3, pz4, ncol = 4, asp = NA)
 ```
 
-## Raster extraction
+## Extracción de datos de un raster
 
-\index{raster extraction} 
-Raster extraction is the process of identifying and returning the values associated with a 'target' raster at specific locations, based on a (typically vector) geographic 'selector' object.
-The results depend on the type of selector used (points, lines or polygons) and arguments passed to the `terra::extract()` function.
-The reverse of raster extraction --- assigning raster cell values based on vector objects --- is rasterization, described in Section \@ref(rasterization).
+La extracción de raster es el proceso de identificar y devolver los valores asociados a un raster "objetivo" en ubicaciones específicas, basándose en un objeto "selector" geográfico (normalmente vectorial).
+Los resultados dependen del tipo de selector utilizado (puntos, líneas o polígonos) y de los argumentos pasados a la función `terra::extract()`.
+El reverso de la extracción raster --- asignar valores de celda raster basado en objetos vectoriales --- es la rasterización, que se describe más adelante.
 
-\index{raster extraction!points} 
-The basic example is of extracting the value of a raster cell at specific **points**.
-For this purpose, we will use `zion_points`, which contain a sample of 30 locations within the Zion National Park (Figure \@ref(fig:pointextr)). 
-The following command extracts elevation values from `srtm` and creates a data frame with points' IDs (one value per vector's row) and related `srtm` values for each point.
-Now, we can add the resulting object to our `zion_points` dataset with the `cbind()` function: 
+El ejemplo básico consiste en extraer el valor de una celda ráster en **puntos** específicos.
+Para ello, utilizaremos `zion_points`, que contiene una muestra de 30 localizaciones dentro del Parque Nacional de Zion. 
+El siguiente comando extrae los valores de elevación de `srtm` y crea un data frame con los ID de los puntos (un valor por fila del vector) y los valores `srtm` relacionados para cada punto.
+Ahora, podemos añadir el objeto resultante a nuestro conjunto de datos `zion_points` con la función `cbind()`: 
 
 ```{r 06-raster-vector-8 }
 data("zion_points", package = "spDataLarge")
@@ -144,16 +130,25 @@ zion_points = cbind(zion_points, elevation)
 ```
 
 ```{r pointextr, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Locations of points used for raster extraction.", fig.asp=0.57}
-source("code/06-pointextr.R", print.eval = TRUE)
+tm1 = tm_shape(srtm) +
+  tm_raster(col.scale = tm_scale_continuous(values = terrain_colors),
+            col.legend = tm_legend("Elevation (m)")) + 
+  tm_shape(zion) +
+  tm_borders(lwd = 2) + 
+  tm_shape(zion_points) + 
+  tm_symbols(fill = "black", size = 0.5) + 
+  tm_add_legend(type = "symbols", fill = "black", size = 0.7,
+                labels = "zion_points", shape = 21) + 
+  tm_layout(legend.frame = TRUE, legend.position = c("right", "top"),
+            legend.bg.color = "white") +
+  tm_place_legends_left(0.2)
+tm1
 ```
 
-\index{raster extraction!lines} 
-Raster extraction also works with **line** selectors.
-Then, it extracts one value for each raster cell touched by a line.
-However, the line extraction approach is not recommended to obtain values along the transects as it is hard to get the correct distance between each pair of extracted raster values.
-
-In this case, a better approach is to split the line into many points and then extract the values for these points.
-To demonstrate this, the code below creates `zion_transect`, a straight line going from northwest to southeast of the Zion National Park, illustrated in Figure \@ref(fig:lineextr)(A) (see Section \@ref(vector-data) for a recap on the vector data model):
+La extracción de datos raster también funciona con selectores de tipo **línea**.
+Entonces, extrae un valor por cada celda raster tocada por la línea.
+El enfoque consiste en dividir la línea en muchos puntos y luego extraer los valores de estos puntos.
+Para demostrarlo, el código siguiente crea `zion_transect`, una línea recta que va del noroeste al sureste del Parque Nacional de Zion:
 
 ```{r 06-raster-vector-11}
 zion_transect = cbind(c(-113.2, -112.9), c(37.45, 37.2)) |>
@@ -168,15 +163,15 @@ zion_transect = cbind(c(-113.2, -112.9), c(37.45, 37.2)) |>
 zion_transect2 = cbind(c(-113.2, -112.9, -113.2), c(36.45, 37.2, 37.5)) |>
   st_linestring() |> 
   st_sfc(crs = crs(srtm)) |>
-  st_sf()
+  st_sf(geometry = _)
 zion_transect = rbind(zion_transect, zion_transect2)
 ```
 
-The utility of extracting heights from a linear selector is illustrated by imagining that you are planning a hike.
-The method demonstrated below provides an 'elevation profile' of the route (the line does not need to be straight), useful for estimating how long it will take due to long climbs.
+La utilidad de extraer alturas de un selector lineal se ilustra imaginando que está planeando una excursión.
+El método que se muestra a continuación proporciona un `perfil de elevación` de la ruta (no es necesario que la línea sea recta), útil para estimar cuánto tiempo se tardará debido a las subidas.
 
-The first step is to add a unique `id` for each transect.
-Next, with the `st_segmentize()` function we can add points along our line(s) with a provided density (`dfMaxLength`) and convert them into points with `st_cast()`.
+El primer paso es añadir un `id` único para cada transecto.
+A continuación, con la función `st_segmentize()` podemos añadir puntos a lo largo de nuestra(s) línea(s) con una densidad proporcionada (`dfMaxLength`) y convertirlos en puntos con `st_cast()`.
 
 ```{r 06-raster-vector-13, warning=FALSE}
 zion_transect$id = 1:nrow(zion_transect)
@@ -184,8 +179,8 @@ zion_transect = st_segmentize(zion_transect, dfMaxLength = 250)
 zion_transect = st_cast(zion_transect, "POINT")
 ```
 
-Now, we have a large set of points, and we want to derive a distance between the first point in our transects and each of the subsequent points. 
-In this case, we only have one transect, but the code, in principle, should work on any number of transects:
+Ahora, tenemos un gran conjunto de puntos, y queremos derivar una distancia entre el primer punto de nuestros transectos y cada uno de los puntos subsiguientes. 
+En este caso, sólo tenemos un transecto, pero el código, en principio, debería funcionar con cualquier número de transectos:
 
 ```{r 06-raster-vector-14}
 zion_transect = zion_transect |> 
@@ -193,14 +188,14 @@ zion_transect = zion_transect |>
   mutate(dist = st_distance(geometry)[, 1]) 
 ```
 
-Finally, we can extract elevation values for each point in our transects and combine this information with our main object.
+Por último, podemos extraer los valores de elevación de cada punto de nuestros transectos y combinar esta información con nuestro objeto principal.
 
 ```{r 06-raster-vector-15}
 zion_elev = terra::extract(srtm, zion_transect)
 zion_transect = cbind(zion_transect, zion_elev)
 ```
 
-The resulting `zion_transect` can be used to create elevation profiles, as illustrated in Figure \@ref(fig:lineextr)(B).
+El `zion_transect` resultante puede utilizarse para crear perfiles de elevación, como se ilustra a continuación.
 
 ```{r lineextr, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Location of a line used for raster extraction (left) and the elevation along this line (right).", fig.scap="Line-based raster extraction."}
 library(tmap)
@@ -243,10 +238,9 @@ print(rast_poly_line, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
 print(plot_transect, vp = viewport(layout.pos.row = 2, layout.pos.col = 2))
 ```
 
-\index{raster extraction!polygons} 
-The final type of geographic vector object for raster extraction is **polygons**.
-Like lines, polygons tend to return many raster values per polygon.
-This is demonstrated in the command below, which results in a data frame with column names `ID` (the row number of the polygon) and `srtm` (associated elevation values):
+El último tipo de objeto vectorial geográfico para la extracción de rásters son los **polígonos**.
+Al igual que las líneas, los polígonos tienden a devolver muchos valores ráster por polígono.
+Esto se demuestra en el siguiente comando, que da como resultado un marco de datos con nombres de columna `ID` (el número de fila del polígono) y `srtm` (valores de elevación asociados):
 
 ```{r 06-raster-vector-17, eval=FALSE, echo=FALSE}
 # aim: create zion_many to test multi-polygon results
@@ -272,20 +266,20 @@ count(zion_nlcd, levels)
 zion_srtm_values = terra::extract(x = srtm, y = zion)
 ```
 
-Such results can be used to generate summary statistics for raster values per polygon, for example to characterize a single region or to compare many regions.
-This is shown in the code below, which creates the object `zion_srtm_df` containing summary statistics for elevation values in Zion National Park (see Figure \@ref(fig:polyextr)(A)):
+Estos resultados pueden utilizarse para generar estadísticas resumidas de valores ráster por polígono, por ejemplo para caracterizar una única región o para comparar muchas regiones.
+Esto se muestra en el siguiente código, que crea el objeto `zion_srtm_df` que contiene estadísticas resumidas para los valores de elevación en el Parque Nacional de Zion:
 
-```{r 06-raster-vector-19 }
+```{r 06-raster-vector-19 } }
 group_by(zion_srtm_values, ID) |> 
   summarize(across(srtm, list(min = min, mean = mean, max = max)))
 ```
 
-The preceding code chunk used the **dplyr**\index{dplyr (package)} to provide summary statistics for cell values per polygon ID, as described in Chapter \@ref(attr).
-The results provide useful summaries, for example that the maximum height in the park is around 2,661 meters above see level (other summary statistics, such as standard deviation, can also be calculated in this way).
-Because there is only one polygon in the example, a data frame with a single row is returned; however, the method works when multiple selector polygons are used.
+El trozo de código anterior utilizó **dplyr** para proporcionar estadísticas de resumen para los valores de celda por ID de polígono.
+Los resultados proporcionan resúmenes útiles, por ejemplo, que la altura máxima en el parque es de alrededor de 2.661 metros sobre el nivel del mar (otras estadísticas de resumen, como la desviación estándar, también se puede calcular de esta manera).
+Como en el ejemplo sólo hay un polígono, se devuelve una tabla de datos con una única fila; sin embargo, el método funciona cuando se utilizan varios polígonos selectores.
 
-The similar approach works for counting occurrences of categorical raster values within polygons.
-This is illustrated with a land cover dataset (`nlcd`) from the **spDataLarge** package in Figure \@ref(fig:polyextr)(B), and demonstrated in the code below:
+Un método similar funciona para el recuento de ocurrencias de valores ráster categóricos dentro de polígonos.
+Esto se ilustra con un conjunto de datos de cobertura del suelo (`nlcd`) del paquete **spDataLarge**, y se demuestra en el código siguiente:
 
 ```{r 06-raster-vector-20, warning=FALSE, message=FALSE}
 nlcd = rast(system.file("raster/nlcd.tif", package = "spDataLarge"))
@@ -317,40 +311,36 @@ rast_poly_nlcd = tm_shape(nlcd) +
 tmap_arrange(rast_poly_srtm, rast_poly_nlcd, ncol = 2)
 ```
 
-\index{raster extraction!exact fractions} 
-Although the **terra** package offers rapid extraction of raster values within polygons, `extract()` can still be a bottleneck when processing large polygon datasets.
-The **exactextractr** package offers a [significantly faster alternative](https://github.com/geocompx/geocompr/issues/813) for extracting pixel values through the `exact_extract()` function. 
-The `exact_extract()` function also computes, by default, the fraction of each raster cell overlapped by the polygon, which is more precise (see note below for details). 
+Aunque el paquete **terra** ofrece una rápida extracción de valores ráster dentro de polígonos, `extract()` puede seguir siendo un cuello de botella cuando se procesan grandes conjuntos de datos de polígonos.
+El paquete **exactextractr** ofrece una [alternativa significativamente más rápida](https://github.com/geocompx/geocompr/issues/813) para extraer valores de píxeles a través de la función `exact_extract()`. 
+La función `exact_extract()` también calcula, por defecto, la fracción de cada celda ráster solapada por el polígono, lo cual es más preciso. 
 
-```{block2 06-raster-vector-22, type='rmdnote'}
-Polygons usually have irregular shapes, and therefore, a polygon can overlap only some parts of a raster's cells. 
-To get more detailed results, the `terra::extract()` function has an argument called `exact`. 
-With `exact = TRUE`, we get one more column `fraction` in the output data frame, which represents a fraction of each cell that is covered by the polygon.
-This could be useful to calculate, for example, a weighted mean for continuous rasters or more precise coverage for categorical rasters.
-By default, it is `FALSE` as this operation requires more computations. 
-The `exactextractr::exact_extract()` function always computes the coverage fraction of the polygon in each cell.
-```
+:::{.callout-note}
+Los polígonos suelen tener formas irregulares y, por lo tanto, un polígono puede solapar sólo algunas partes de las celdas de un ráster. 
+Para obtener resultados más detallados, la función `terra::extract()` tiene un argumento llamado `exact`. 
+Con `exact = TRUE`, obtenemos una columna más `fraction` en el marco de datos de salida, que representa una fracción de cada celda que está cubierta por el polígono.
+Esto podría ser útil para calcular, por ejemplo, una media ponderada para rásters continuos o una cobertura más precisa para rásters categóricos.
+Por defecto, es `FALSE` ya que esta operación requiere más cálculos. 
+La función `exactextractr::exact_extract()` siempre calcula la fracción de cobertura del polígono en cada celda.
+:::
 
 ```{r 06-raster-vector-23, include=FALSE}
 zion_srtm_values = terra::extract(x = srtm, y = zion, exact = FALSE)
 ```
 
-## Rasterization {#rasterization}
+## Rasterización
 
-\index{rasterization} 
-Rasterization is the conversion of vector objects into their representation in raster objects.
-Usually, the output raster is then used for quantitative analysis (e.g., analysis of terrain) or modeling.
-As we saw in Chapter \@ref(spatial-class), the raster data model has some characteristics that make it conducive to certain methods.
-Furthermore, the process of rasterization can help simplify datasets because the resulting values all have the same spatial resolution: rasterization can be seen as a special type of geographic data aggregation.
+La rasterización es la conversión de objetos vectoriales a raster.
+Normalmente, el ráster de salida se utiliza después para análisis cuantitativos (por ejemplo, análisis del terreno) o modelado.
+El proceso de rasterización puede ayudar a simplificar los conjuntos de datos porque todos los valores resultantes tienen la misma resolución espacial: la rasterización puede considerarse un tipo especial de agregación de datos geográficos.
 
-The **terra** package contains the function `rasterize()` for doing this work.
-Its first two arguments are, `x`, vector object to be rasterized and, `y`, a 'template raster' object defining the extent, resolution and CRS of the output.
-The geographic resolution of the input raster has a major impact on the results: if it is too low (cell size is too large), the result may miss the full geographic variability of the vector data; if it is too high, computational times may be excessive.
-There are no simple rules to follow when deciding an appropriate geographic resolution, which is heavily dependent on the intended use of the results.
-Often the target resolution is imposed on the user, for example when the output of rasterization needs to be aligned to some other existing raster.
+El paquete **terra** contiene la función `rasterize()` para realizar este trabajo.
+Sus dos primeros argumentos son, `x`, objeto vectorial a rasterizar e, `y`, un objeto `plantilla raster' que define la extensión, resolución y CRS de la salida.
+La resolución geográfica del ráster de entrada tiene un gran impacto en los resultados: si es demasiado baja (el tamaño de las celdas es demasiado grande), el resultado puede perder toda la variabilidad geográfica de los datos vectoriales; si es demasiado alta, los tiempos de cálculo pueden ser excesivos.
+No existen reglas sencillas a la hora de decidir la resolución geográfica adecuada, que depende en gran medida del uso que se pretenda dar a los resultados.
+A menudo, la resolución objetivo se impone al usuario, por ejemplo cuando el resultado de la rasterización debe alinearse con algún otro raster existente.
 
-\index{rasterization!points} 
-To demonstrate rasterization in action, we will use a template raster that has the same extent and CRS as the input vector data `cycle_hire_osm_projected` (a dataset on cycle hire points in London is illustrated in Figure \@ref(fig:vector-rasterization1)(A)) and spatial resolution of 1000 meters:
+Para demostrar la rasterización en acción, utilizaremos una plantilla raster que tiene la misma extensión y CRS que los datos vectoriales de entrada `cycle_hire_osm_projected` y una resolución espacial de 1000 metros:
 
 ```{r 06-raster-vector-24 }
 cycle_hire_osm = spData::cycle_hire_osm
@@ -359,27 +349,27 @@ raster_template = rast(ext(cycle_hire_osm_projected), resolution = 1000,
                        crs = st_crs(cycle_hire_osm_projected)$wkt)
 ```
 
-Rasterization is a very flexible operation: the results depend not only on the nature of the template raster, but also on the type of input vector (e.g., points, polygons) and a variety of arguments taken by the `rasterize()` function.
+La rasterización es una operación muy flexible: los resultados dependen no sólo de la naturaleza de la plantilla raster, sino también del tipo de vector de entrada (por ejemplo, puntos, polígonos) y de una variedad de argumentos tomados por la función `rasterize()`.
 
-To illustrate this flexibility we will try three different approaches to rasterization.
-First, we create a raster representing the presence or absence of cycle hire points (known as presence/absence rasters).
-In this case `rasterize()` requires no argument in addition to `x` and `y`, the aforementioned vector and raster objects (results illustrated Figure \@ref(fig:vector-rasterization1)(B)).
+Para ilustrar esta flexibilidad, probaremos tres enfoques diferentes de la rasterización.
+En primer lugar, crearemos un raster que represente la presencia o ausencia de puntos de alquiler de bicicletas (conocidos como raster de presencia/ausencia).
+En este caso, `rasterize()` no requiere ningún argumento además de `x` e `y`, los objetos vector y raster antes mencionados.
 
 ```{r 06-raster-vector-25 }
 ch_raster1 = rasterize(cycle_hire_osm_projected, raster_template)
 ```
 
-The `fun` argument specifies summary statistics used to convert multiple observations in close proximity into associate cells in the raster object.
-By default `fun = "last"` is used but other options such as `fun = "length"` can be used, in this case to count the number of cycle hire points in each grid cell (the results of this operation are illustrated in Figure \@ref(fig:vector-rasterization1)(C)).
+El argumento `fun` especifica los estadísticos de resumen utilizados para convertir múltiples observaciones muy próximas en celdas asociadas en el objeto raster.
+Por defecto se utiliza `fun = "last"` pero se pueden utilizar otras opciones como `fun = "length"`, en este caso para contar el número de puntos de alquiler de ciclos en cada celda de la cuadrícula.
 
 ```{r 06-raster-vector-26}
 ch_raster2 = rasterize(cycle_hire_osm_projected, raster_template, 
                        fun = "length")
 ```
 
-The new output, `ch_raster2`, shows the number of cycle hire points in each grid cell.
-The cycle hire locations have different numbers of bicycles described by the `capacity` variable, raising the question, what's the capacity in each grid cell?
-To calculate that we must `sum` the field (`"capacity"`), resulting in output illustrated in Figure \@ref(fig:vector-rasterization1)(D), calculated with the following command (other summary functions such as `mean` could be used):
+El nuevo resultado, `ch_raster2`, muestra el número de puntos de alquiler de bicicletas en cada cuadrícula.
+Los puntos de alquiler de bicicletas tienen diferentes números de bicicletas descritos por la variable `capacity`, lo que plantea la siguiente pregunta: ¿cuál es la capacidad de cada celda de la cuadrícula?
+Para calcularlo debemos "sumar" el campo (`"capacity"`), calculada con el siguiente comando (también se podrían utilizar otras funciones de resumen como `mean`):
 
 ```{r 06-raster-vector-27 }
 ch_raster3 = rasterize(cycle_hire_osm_projected, raster_template, 
@@ -387,55 +377,94 @@ ch_raster3 = rasterize(cycle_hire_osm_projected, raster_template,
 ```
 
 ```{r vector-rasterization1, echo=FALSE, fig.cap="Examples of point rasterization.", warning=FALSE}
-source("code/06-vector-rasterization1.R", print.eval = TRUE)
+r0p = tm_shape(cycle_hire_osm_projected) + 
+  tm_symbols(fill = "capacity", size = 0.3, 
+             fill.legend = tm_legend("Capacity: ")) + 
+  tm_title("A. Points") +
+  tm_layout(legend.position = c("right", "bottom"), legend.frame = TRUE)
+
+r1p = tm_shape(ch_raster1) + 
+  tm_raster(col.scale = tm_scale_categorical(values = cols4all::c4a(n = 1, "hcl.blues3", reverse = TRUE)),
+            col.legend = tm_legend("Values: ")) + 
+  tm_title("B. Presence/absence") +
+  tm_layout(legend.position = c("right", "bottom"), legend.frame = TRUE)
+
+r2p = tm_shape(ch_raster2) + 
+  tm_raster(col.legend = tm_legend("Values: ")) + 
+  tm_title("C. Count") +
+  tm_layout(legend.position = c("right", "bottom"), legend.frame = TRUE)
+
+r3p = tm_shape(ch_raster3) + 
+  tm_raster(col.legend = tm_legend("Values: ")) + 
+  tm_title("D. Aggregated capacity") +
+  tm_layout(legend.position = c("right", "bottom"), legend.frame = TRUE)
+
+tmap_arrange(r0p, r1p, r2p, r3p, ncol = 2)
 ```
 
-\index{rasterization!lines} 
-\index{rasterization!polygons} 
-Another dataset based on California's polygons and borders (created below) illustrates rasterization of lines.
-After casting the polygon objects into a multilinestring, a template raster is created with a resolution of a 0.5 degree:
+Otro conjunto de datos basado en polígonos y fronteras de California ilustra la rasterización de líneas.
+Tras fundir los objetos poligonales en una multilínea, se crea un raster de plantilla con una resolución de 0.5 grados:
 
 ```{r 06-raster-vector-29 }
+library(spData)
 california = dplyr::filter(us_states, NAME == "California")
 california_borders = st_cast(california, "MULTILINESTRING")
 raster_template2 = rast(ext(california), resolution = 0.5,
                         crs = st_crs(california)$wkt)
 ```
 
-When considering line or polygon rasterization, one useful additional argument is `touches`.
-By default it is `FALSE`, but when changed to `TRUE` -- all cells that are touched by a line or polygon border get a value.
-Line rasterization with `touches = TRUE` is demonstrated in the code below (Figure \@ref(fig:vector-rasterization2)(A)).
+Al considerar la rasterización de líneas o polígonos, un argumento adicional útil es "touches".
+Por defecto es `FALSE`, pero cuando se cambia a `TRUE` -- todas las celdas que son tocadas por el borde de una línea o polígono obtienen un valor.
+La rasterización de líneas con `touches = TRUE` se muestra en el siguiente código.
 
 ```{r 06-raster-vector-30}
 california_raster1 = rasterize(california_borders, raster_template2,
                                touches = TRUE)
 ```
 
-Compare it to a polygon rasterization, with `touches = FALSE` by default, which selects only raster cells whose centroids are inside the selector polygon, as illustrated in Figure \@ref(fig:vector-rasterization2)(B).
+Compárelo con una rasterización de polígonos, con `touches = FALSE` por defecto, que selecciona sólo las celdas raster cuyos centroides están dentro del polígono selector.
 
 ```{r 06-raster-vector-31}
 california_raster2 = rasterize(california, raster_template2) 
 ```
 
 ```{r vector-rasterization2, echo=FALSE, fig.cap="Examples of line and polygon rasterizations.", warning=FALSE}
-source("code/06-vector-rasterization2.R", print.eval = TRUE)
+california_raster_centr = st_as_sf(as.polygons(raster_template2))
+california_raster_centr = st_centroid(california_raster_centr)
+
+r1po = tm_shape(california_raster1) + 
+  tm_raster(col.legend = tm_legend("Values: "),
+            col.scale = tm_scale(values = "#b6d8fc")) + 
+  tm_shape(california_raster_centr) +
+  tm_symbols(shape = 20, col = "black", size = 0.2) + 
+  tm_shape(california) + tm_borders() + 
+  tm_title("A. Line rasterization") + 
+  tm_layout(legend.show = FALSE, frame = FALSE)
+
+r2po = tm_shape(california_raster2) +
+  tm_raster(col.legend = tm_legend("Values: "),
+            col.scale = tm_scale(values = "#b6d8fc")) + 
+  tm_shape(california_raster_centr) + 
+  tm_symbols(shape = 20, col = "black", size = 0.2) + 
+  tm_shape(california) + tm_borders() + 
+  tm_title("B. Polygon rasterization")  + 
+  tm_layout(legend.show = FALSE, frame = FALSE)
+
+tmap_arrange(r1po, r2po, ncol = 2)
 ```
 
-## Spatial vectorization
+## Vectorización espacial
 
-\index{spatial vectorization} 
-Spatial vectorization is the counterpart of rasterization (Section \@ref(rasterization)), but in the opposite direction.
-It involves converting spatially continuous raster data into spatially discrete vector data such as points, lines or polygons.
+La vectorización espacial es la contrapartida de la rasterización.
+Consiste en convertir datos ráster espacialmente continuos en datos vectoriales espacialmente discretos, como puntos, líneas o polígonos.
 
-```{block2 06-raster-vector-33, type="rmdnote"}
-Be careful with the wording!
-In R, vectorization usually refers to the possibility of replacing `for`-loops and alike by doing things like `1:10 / 2` (see also @wickham_advanced_2019).
-```
+:::{.callout-note}
+En R, la vectorización suele referirse a la posibilidad de sustituir los bucles `for` y similares haciendo cosas como `1:10 / 2`.
+:::
 
-\index{spatial vectorization!points} 
-The simplest form of vectorization is to convert the centroids of raster cells into points.
-`as.points()` does exactly this for all non-`NA` raster grid cells (Figure \@ref(fig:raster-vectorization1)).
-Note, here we also used `st_as_sf()` to convert the resulting object to the `sf` class.
+La forma más simple de vectorización es convertir los centroides de las celdas raster en puntos.
+`as.points()` hace exactamente esto para todas las celdas de cuadrícula raster que no sean `NA`.
+Tenga en cuenta que aquí también utilizamos `st_as_sf()` para convertir el objeto resultante a la clase `sf`.
 
 ```{r 06-raster-vector-34 }
 elev = rast(system.file("raster/elev.tif", package = "spData"))
@@ -444,15 +473,22 @@ elev_point = as.points(elev) |>
 ```
 
 ```{r raster-vectorization1, echo=FALSE, fig.cap="Raster and point representation of the elev object.", warning=FALSE}
-source("code/06-raster-vectorization1.R", print.eval = TRUE)
+p1 = tm_shape(elev) + 
+  tm_raster(col.scale = tm_scale(n = 36)) +
+  tm_title("A. Raster") +
+  tm_layout(outer.margins = rep(0.01, 4), inner.margins = rep(0, 4), legend.show = FALSE)
+p2 = tm_shape(elev_point) +
+  tm_symbols(fill = "elev", fill.scale = tm_scale(n = 36), size = 2) +
+  tm_title("B. Points") +
+  tm_layout(outer.margins = rep(0.01, 4), inner.margins = rep(0.09, 4), legend.show = FALSE)
+tmap_arrange(p1, p2, ncol = 2)
 ```
 
-\index{spatial vectorization!contours} 
-Another common type of spatial vectorization is the creation of contour lines representing lines of continuous height or temperatures (isotherms) for example.
-We will use a real-world digital elevation model (DEM) because the artificial raster `elev` produces parallel lines (task for the reader: verify this and explain why this happens).
-Contour lines can be created with the **terra** function `as.contour()`, which is itself a wrapper around the built-in R function `filled.contour()`, as demonstrated below (not shown):
+Otro tipo común de vectorización espacial es la creación de curvas de nivel que representen líneas de altura o temperaturas continuas (isotermas), por ejemplo.
+Utilizaremos un modelo digital de elevación (MDE) del mundo real porque el ráster artificial `elev` produce líneas paralelas.
+Las curvas de nivel se pueden crear con la función **terra** `as.contour()`, que es a su vez una envoltura de la función incorporada en R `filled.contour()`, como se demuestra a continuación:
 
-```{r 06-raster-vector-36, eval=FALSE}
+```{r 06-raster-vector-36}
 dem = rast(system.file("raster/dem.tif", package = "spDataLarge"))
 cl = as.contour(dem) |> 
   st_as_sf()
@@ -460,27 +496,22 @@ plot(dem, axes = FALSE)
 plot(cl, add = TRUE)
 ```
 
-Contours can also be added to existing plots with functions such as `contour()`, `rasterVis::contourplot()` or `tmap::tm_iso()`.
-As illustrated in Figure \@ref(fig:contour-tmap), isolines can be labelled.
-
-\index{hillshade}
+También pueden añadirse contornos a los gráficos existentes con funciones como `contour()`, `rasterVis::contourplot()` o `tmap::tm_iso()` y, las isolíneas pueden etiquetarse.
 
 ```{r contour-tmap, echo=FALSE, message=FALSE, fig.cap="DEM with hillshading, showing the southern flank of Mt. Mongón overlaid with contour lines.", fig.scap="DEM with hillshading.", warning=FALSE, fig.asp=0.56}
-# hs = shade(slope = terrain(dem, "slope", unit = "radians"),
-#            aspect = terrain(dem, "aspect", unit = "radians"))
-# plot(hs, col = gray(0:100 / 100), legend = FALSE)
-# # overlay with DEM
-# plot(dem, col = terrain.colors(25), alpha = 0.5, legend = FALSE, add = TRUE)
-# # add contour lines
-# contour(dem, col = "white", add = TRUE)
-knitr::include_graphics("figures/06-contour-tmap.png")
+hs = shade(slope = terrain(dem, "slope", unit = "radians"),
+           aspect = terrain(dem, "aspect", unit = "radians"))
+plot(hs, col = gray(0:100 / 100), legend = FALSE)
+# overlay with DEM
+plot(dem, col = terrain.colors(25), alpha = 0.5, legend = FALSE, add = TRUE)
+# add contour lines
+contour(dem, col = "white", add = TRUE)
 ```
 
-\index{spatial vectorization!polygons} 
-The final type of vectorization involves conversion of rasters to polygons.
-This can be done with `terra::as.polygons()`, which converts each raster cell into a polygon consisting of five coordinates, all of which are stored in memory (explaining why rasters are often fast compared with vectors!).
+El último tipo de vectorización implica la conversión de rásters en polígonos.
+Esto puede hacerse con `terra::as.polygons()`, que convierte cada celda ráster en un polígono formado por cinco coordenadas, todas las cuales se almacenan en memoria (¡explicando por qué los rásters son a menudo rápidos comparados con los vectores!).
 
-This is illustrated below by converting the `grain` object into polygons and subsequently dissolving borders between polygons with the same attribute values (also see the `dissolve` argument in `as.polygons()`).
+Esto se ilustra a continuación convirtiendo el objeto `grain` en polígonos y disolviendo posteriormente los bordes entre polígonos con los mismos valores de atributo (véase también el argumento `dissolve` en `as.polygons()`).
 
 ```{r 06-raster-vector-39 }
 grain = rast(system.file("raster/grain.tif", package = "spData"))
@@ -489,10 +520,22 @@ grain_poly = as.polygons(grain) |>
 ```
 
 ```{r 06-raster-vector-40, echo=FALSE, fig.cap="Illustration of vectorization of raster (left) into polygons (dissolve = FALSE; center) and aggregated polygons (dissolve = TRUE; right).", warning=FALSE, fig.asp=0.4, fig.scap="Illustration of vectorization."}
-source("code/06-raster-vectorization2.R", print.eval = TRUE)
-```
+cols = c("clay" = "brown", "sand" = "rosybrown", "silt" = "sandybrown")
 
-The aggregated polygons of the `grain` dataset have rectilinear boundaries which arise from being defined by connecting rectangular pixels.
-The **smoothr** package described in Chapter \@ref(geometry-operations) can be used to smooth the edges of the polygons.
-As smoothing removes sharp edges in the polygon boundaries, the smoothed polygons will not have the same exact spatial coverage as the original pixels (see the **smoothr** [website](https://strimas.com/smoothr/) for examples).
-Caution should therefore be taken when using the smoothed polygons for further analysis.
+p1p = tm_shape(grain) +
+  tm_raster("grain", col.scale = tm_scale(values = cols)) +
+  tm_title("A. Raster") +
+  tm_layout(frame = FALSE, legend.show = FALSE)
+
+p2p = tm_shape(grain_poly) +
+  tm_polygons() +
+  tm_title("B.Polygons") +
+  tm_layout(frame = FALSE, legend.show = FALSE)
+
+p3p = tm_shape(grain_poly) + 
+  tm_polygons("grain", fill.scale = tm_scale(values = cols), lwd = 3)  +
+  tm_title("C. Aggregated polygons") +
+  tm_layout(frame = FALSE, legend.show = FALSE)
+
+tmap_arrange(p1p, p2p, p3p, ncol = 3)
+```

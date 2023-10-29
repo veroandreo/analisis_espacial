@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Modificado de https://r.geocompx.org/">
+
+<title>Reproyeccion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="reproyeccion_files/libs/clipboard/clipboard.min.js"></script>
+<script src="reproyeccion_files/libs/quarto-html/quarto.js"></script>
+<script src="reproyeccion_files/libs/quarto-html/popper.min.js"></script>
+<script src="reproyeccion_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="reproyeccion_files/libs/quarto-html/anchor.min.js"></script>
+<link href="reproyeccion_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="reproyeccion_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="reproyeccion_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="reproyeccion_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="reproyeccion_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introducción" id="toc-introducción" class="nav-link active" data-scroll-target="#introducción">Introducción</a></li>
+  <li><a href="#sistemas-de-referencia-de-coordenadas" id="toc-sistemas-de-referencia-de-coordenadas" class="nav-link" data-scroll-target="#sistemas-de-referencia-de-coordenadas">Sistemas de referencia de coordenadas</a></li>
+  <li><a href="#crs-setting" id="toc-crs-setting" class="nav-link" data-scroll-target="#crs-setting">Consulta y establecimiento de sistemas de coordenadas</a></li>
+  <li><a href="#geom-proj" id="toc-geom-proj" class="nav-link" data-scroll-target="#geom-proj">Operaciones geométricas sobre datos proyectados y no proyectados</a></li>
+  <li><a href="#cuándo-reproyectar" id="toc-cuándo-reproyectar" class="nav-link" data-scroll-target="#cuándo-reproyectar">¿Cuándo reproyectar?</a></li>
+  <li><a href="#qué-crs-utilizar" id="toc-qué-crs-utilizar" class="nav-link" data-scroll-target="#qué-crs-utilizar">¿Qué CRS utilizar?</a></li>
+  <li><a href="#reproyección-de-geometrías-vectoriales" id="toc-reproyección-de-geometrías-vectoriales" class="nav-link" data-scroll-target="#reproyección-de-geometrías-vectoriales">Reproyección de geometrías vectoriales</a></li>
+  <li><a href="#reproj-ras" id="toc-reproj-ras" class="nav-link" data-scroll-target="#reproj-ras">Reproyección de geometrías raster</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Reproyeccion</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Modificado de <a href="https://r.geocompx.org/" class="uri">https://r.geocompx.org/</a> </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spData)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spDataLarge)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="introducción" class="level2">
+<h2 class="anchored" data-anchor-id="introducción">Introducción</h2>
+<p>Los sistemas de referencia de coordenadas (SRC) pueden ser de dos tipos principales: sistemas de coordenadas <em>geográficas</em> (‘lon/lat’, con unidades en grados de longitud y latitud) y <em>proyectadas</em> (normalmente con unidades de metros desde un datum). Este capítulo demuestra cómo establecer y <em>transformar</em> datos geográficos de un CRS a otro y, además, destaca problemas específicos que pueden surgir debido a ignorar CRSs y que deberías tener en cuenta, especialmente si tus datos se almacenan con coordenadas lon/lat.</p>
+<p>En muchos proyectos no hay necesidad de preocuparse por los diferentes CRS, y mucho menos de realizar conversiones entre ellos. Sin embargo, si conoces el CRS de tus datos y las consecuencias para las operaciones geométricas (tratadas en la siguiente sección), los CRSs deberían <em>simplemente funcionar</em> entre bastidores: la gente a menudo necesita aprender de repente sobre los CRSs cuando las cosas van mal. Tener un CRS claramente definido en el que estén todos los datos del proyecto, además de entender cómo y por qué usar diferentes CRSs, puede asegurar que las cosas no vayan mal.</p>
+<p>Este capítulo enseña los fundamentos de los CRS, demuestra las consecuencias de utilizar diferentes CRS (incluyendo lo que puede salir mal) y cómo “reproyectar” conjuntos de datos de un sistema de coordenadas a otro. En las siguientes secciones introducimos los CRSs en R, cómo obtener y establecer CRSs asociados con objetos espaciales, cuándo reproyectar y qué CRS utilizar, entre otras cosas.</p>
+</section>
+<section id="sistemas-de-referencia-de-coordenadas" class="level2">
+<h2 class="anchored" data-anchor-id="sistemas-de-referencia-de-coordenadas">Sistemas de referencia de coordenadas</h2>
+<p>La mayoría de las herramientas geográficas modernas que requieren conversiones de CRS, incluidos los paquetes básicos de R-spatial y el software SIG de escritorio como QGIS, interactúan con <a href="https://proj.org">PROJ</a>, una biblioteca C++ de código abierto que “transforma coordenadas de un sistema de referencia de coordenadas (CRS) a otro”. Los CRS pueden describirse de muchas maneras, entre las que se incluyen las siguientes.</p>
+<ol type="1">
+<li>Enunciados simples pero potencialmente ambiguos como “está en coordenadas lon/lat”.</li>
+<li>“proj4 strings” formalizadas, aunque ya obsoletas, como <code>+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs</code>.</li>
+<li>Con una cadena de texto identificativa “authority:code” como <code>EPSG:4326</code>.</li>
+</ol>
+<p>Cada una de ellas hace referencia a lo mismo: el sistema de coordenadas “WGS84” que constituye la base de las coordenadas del Sistema de Posicionamiento Global (GPS) y de muchos otros conjuntos de datos. Pero, ¿cuál es el correcto?</p>
+<p>La respuesta corta es que la tercera forma de identificar los CRS es preferible: Los paquetes <strong>sf</strong> (y por extensión <strong>stars</strong>) y <strong>terra</strong>, además de muchos otros proyectos de software para trabajar con datos geográficos, entienden <code>EPSG:4326</code>. Además, es corto, fácil de recordar y muy ‘localizable’ en línea. <strong>sf</strong> entiende el identificador más conciso <code>4326</code>, pero <strong>recomendamos la representación más explícita <code>AUTHORITY:CODE</code> para evitar ambigüedades y proporcionar contexto</strong>.</p>
+<p>La respuesta más larga es que ninguna de las tres descripciones es suficiente y se necesitan más detalles para manejar y transformar los CRS sin ambigüedades: debido a la complejidad de los SIR, no es posible capturar toda la información relevante sobre ellos en cadenas de texto tan cortas. Por este motivo, el Open Geospatial Consortium desarrolló un formato estándar abierto que se denomina WKT (Well-Known Text). Esto se detalla en un <a href="https://portal.opengeospatial.org/files/18-010r7">documento de más de 100 páginas</a> que “define la estructura y el contenido de una implementación de cadena de texto del modelo abstracto para sistemas de referencia de coordenadas descrito en ISO 19111:2019”. La representación WKT del SIR WGS84, que tiene el <strong>identificador</strong> <code>EPSG:4326</code> es la siguiente:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(<span class="st">"EPSG:4326"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:4326 
+  wkt:
+GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+</div>
+<p>La convención de referirse a los identificadores CRSs de la forma <code>AUTORIDAD:CÓDIGO</code>, que también es utilizada por el software geográfico escrito en otros <a href="https://jorisvandenbossche.github.io/blog/2020/02/11/geopandas-pyproj-crs/">lenguajes</a>, permite referirse a una amplia gama de sistemas de coordenadas formalmente definidos.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> La autoridad más utilizada en los identificadores CRS es <em>EPSG</em>, acrónimo de European Petroleum Survey Group, que publicó una lista normalizada de CRS (el EPSG fue <a href="http://wiki.gis.com/wiki/index.php/European_Petroleum_Survey_Group">absorbido</a> por el organismo de petróleo y gas el <a href="https://www.iogp.org/our-committees/geomatics/">Comité de Geomática de la Asociación Internacional de Productores de Petróleo y Gas</a> en 2005). Pueden utilizarse otras autoridades en los identificadores SIR. <code>ESRI:54030</code>, por ejemplo, se refiere a la implementación de ESRI de la proyección Robinson, que tiene la siguiente cadena WKT (sólo se muestran las 8 primeras líneas):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(<span class="st">"ESRI:54030"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Coordinate Reference System:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   User input: ESRI:54030 </span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   wkt:</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PROJCRS["World_Robinson",</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     BASEGEOGCRS["WGS 84",</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         DATUM["World Geodetic System 1984",</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             ELLIPSOID["WGS 84",6378137,298.257223563,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 LENGTHUNIT["metre",1]]],</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Las cadenas WKT son exhaustivas, detalladas y precisas, y permiten almacenar y transformar los SIR sin ambigüedades. Contienen toda la información relevante sobre cualquier SIR, incluido su datum y elipsoide, meridiano principal, proyección y unidades. Antes de la aparición de las definiciones WKT CRS, proj-string era la forma estándar de especificar operaciones de coordenadas y almacenar CRSs. Estas representaciones de cadena, construidas sobre una forma clave=valor (por ejemplo, <code>+proj=longlat +datum=WGS84 +no_defs</code>), ya han sido, o deberían ser en el futuro, sustituidas por representaciones WKT en la mayoría de los casos.</p>
+<p>Las versiones recientes de PROJ (6+) todavía permiten el uso de proj-strings para definir operaciones de coordenadas, pero algunas claves proj-string (<code>+nadgrids</code>, <code>+towgs84</code>, <code>+k</code>, <code>+init=epsg:</code>) ya no se soportan o se desaconsejan.</p>
+</section>
+<section id="crs-setting" class="level2">
+<h2 class="anchored" data-anchor-id="crs-setting">Consulta y establecimiento de sistemas de coordenadas</h2>
+<p>Veamos cómo se almacenan los CRS en los objetos espaciales de R y cómo pueden consultarse y establecerse. Primero veremos cómo obtener y establecer CRS en objetos geográficos <strong>vector</strong>, comenzando con el siguiente ejemplo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>vector_filepath <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"shapes/world.gpkg"</span>, <span class="at">package =</span> <span class="st">"spData"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>new_vector <span class="ot">=</span> <span class="fu">read_sf</span>(vector_filepath)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El CRS puede recuperarse con la función <strong>sf</strong> <code>st_crs()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(new_vector) <span class="co"># get CRS</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Coordinate Reference System:</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   User input: WGS 84 </span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   wkt:</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La salida es una lista que contiene dos componentes principales:</p>
+<ol type="1">
+<li><code>User input</code> (en este caso <code>WGS 84</code>, un sinónimo de <code>EPSG:4326</code> que en este caso se tomó del fichero de entrada), correspondiente a los identificadores CRS descritos anteriormente</li>
+<li><code>wkt</code>, que contiene la cadena WKT completa con toda la información pertinente sobre el CRS.</li>
+</ol>
+<p>El elemento <code>input</code> es flexible, y dependiendo del fichero de entrada o de la entrada del usuario, puede contener la representación <code>AUTHORITY:CODE</code> (por ejemplo, <code>EPSG:4326</code>), el nombre del CRS (por ejemplo, <code>WGS 84</code>), o incluso la definición proj-string. El elemento <code>wkt</code> almacena la representación WKT, que se utiliza al guardar el objeto en un archivo o al realizar cualquier operación de coordenadas. Arriba, podemos ver que el objeto <code>new_vector</code> tiene el elipsoide WGS84, utiliza el meridiano de Greenwich, y el orden de los ejes de latitud y longitud. En este caso, también tenemos algunos elementos adicionales, como <code>USAGE</code> que explica el área adecuada para el uso de este CRS, e <code>ID</code> que señala el identificador del CRS: <code>EPSG:4326</code>.</p>
+<p>La función <code>st_crs</code> también tiene una característica útil: podemos recuperar información adicional sobre el CRS utilizado. Por ejemplo, intente ejecutar</p>
+<ul>
+<li><code>st_crs(new_vector)$IsGeographic</code> para comprobar si el CRS es geográfico o no</li>
+<li><code>st_crs(new_vector)$units_gdal</code> para averiguar las unidades del CRS</li>
+<li><code>st_crs(new_vector)$srid</code> extrae su identificador “SRID” (si está disponible)</li>
+<li><code>st_crs(new_vector)$proj4string</code> extrae la representación proj-string</li>
+</ul>
+<p>En los casos en los que falta un sistema de referencia de coordenadas (CRS) o se establece un CRS incorrecto, se puede utilizar la función <code>st_set_crs()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>new_vector <span class="ot">=</span> <span class="fu">st_set_crs</span>(new_vector, <span class="st">"EPSG:4326"</span>) <span class="co"># set CRS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>La obtención y configuración de los CRS funciona de forma similar para los objetos ráster. La función <code>crs()</code> del paquete <code>terra</code> accede a la información CRS de un objeto <code>SpatRaster</code> (nótese el uso de la función <code>cat()</code> para imprimirla correctamente):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>raster_filepath <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">"raster/srtm.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>my_rast <span class="ot">=</span> <span class="fu">rast</span>(raster_filepath)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">crs</span>(my_rast)) <span class="co"># get CRS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>GEOGCRS["WGS 84",
+    ENSEMBLE["World Geodetic System 1984 ensemble",
+        MEMBER["World Geodetic System 1984 (Transit)"],
+        MEMBER["World Geodetic System 1984 (G730)"],
+        MEMBER["World Geodetic System 1984 (G873)"],
+        MEMBER["World Geodetic System 1984 (G1150)"],
+        MEMBER["World Geodetic System 1984 (G1674)"],
+        MEMBER["World Geodetic System 1984 (G1762)"],
+        MEMBER["World Geodetic System 1984 (G2139)"],
+        ELLIPSOID["WGS 84",6378137,298.257223563,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[2.0]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Horizontal component of 3D system."],
+        AREA["World."],
+        BBOX[-90,-180,90,180]],
+    ID["EPSG",4326]]</code></pre>
+</div>
+</div>
+<p>La salida es la representación de cadena WKT de CRS. La misma función, <code>crs()</code>, también se puede utilizar para establecer un CRS para objetos raster.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">crs</span>(my_rast) <span class="ot">=</span> <span class="st">"EPSG:26912"</span> <span class="co"># set CRS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Es importante destacar que las funciones <code>st_crs()</code> y <code>crs()</code> no alteran los valores de las coordenadas ni las geometrías. Su función es únicamente establecer una información de metadatos sobre el CRS del objeto.</p>
+<p>En algunos casos, el CRS de un objeto geográfico es desconocido, como es el caso del conjunto de datos <code>london</code> creado en el fragmento de código siguiente:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>london <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">lon =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">lat =</span> <span class="fl">51.5</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">st_is_longlat</span>(london)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] NA</code></pre>
+</div>
+</div>
+<p>La salida <code>NA</code> muestra que <strong>sf</strong> no sabe cuál es el CRS y no está dispuesto a adivinarlo (<code>NA</code> significa literalmente ‘no disponible’). A menos que un CRS se especifique manualmente o se cargue desde una fuente que tenga metadatos CRS, <strong>sf</strong> no hace ninguna suposición explícita sobre qué sistemas de coordenadas, aparte de decir “no lo sé”. Este comportamiento tiene sentido dada la diversidad de CRS disponibles, pero difiere de algunos enfoques, como la especificación del formato de archivo GeoJSON, que hace la suposición simplificadora de que todas las coordenadas tienen un CRS lon/lat: <code>EPSG:4326</code>. Los conjuntos de datos sin un CRS especificado pueden causar problemas: todas las coordenadas geográficas tienen un sistema de coordenadas y el software sólo puede tomar decisiones correctas sobre el trazado y las operaciones geométricas si sabe con qué tipo de CRS está trabajando. Por lo tanto, de nuevo, es importante comprobar siempre el CRS de un conjunto de datos y establecerlo si falta.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>london_geo <span class="ot">=</span> <span class="fu">st_set_crs</span>(london, <span class="st">"EPSG:4326"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_is_longlat</span>(london_geo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+</section>
+<section id="geom-proj" class="level2">
+<h2 class="anchored" data-anchor-id="geom-proj">Operaciones geométricas sobre datos proyectados y no proyectados</h2>
+<p>Desde la versión 1.0.0 de <strong>sf</strong>, la capacidad de R para trabajar con conjuntos de datos vectoriales geográficos que tienen CRS lon/lat ha mejorado sustancialmente, gracias a su integración con el <em>motor de geometría esférica</em> S2. GEOS se utiliza siempre para datos proyectados y datos sin CRS; para datos geográficos se utiliza S2 por defecto, pero puede desactivarse con <code>sf::sf_use_s2(FALSE)</code>.</p>
+<p>Para demostrar la importancia de los SIR, crearemos un búfer de 100 km alrededor del objeto “Londres” de la sección anterior. También crearemos un búfer deliberadamente defectuoso con una “distancia” de 1 grado, que equivale aproximadamente a 100 km (1 grado son unos 111 km en el ecuador).</p>
+<p>La primera etapa consiste en crear tres buffers alrededor de los objetos <code>london</code> y <code>london_geo</code> creados anteriormente con distancias límite de 1 grado y 100 km (o 100.000 m, que puede expresarse como <code>1e5</code> en notación científica) desde el centro de Londres:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>london_buff_no_crs <span class="ot">=</span> <span class="fu">st_buffer</span>(london, <span class="at">dist =</span> <span class="dv">1</span>)   <span class="co"># incorrect: no CRS</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>london_buff_s2 <span class="ot">=</span> <span class="fu">st_buffer</span>(london_geo, <span class="at">dist =</span> <span class="dv">100000</span>) <span class="co"># silent use of s2</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>london_buff_s2_100_cells <span class="ot">=</span> <span class="fu">st_buffer</span>(london_geo, <span class="at">dist =</span> <span class="dv">100000</span>, <span class="at">max_cells =</span> <span class="dv">100</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>En la primera línea de arriba, <strong>sf</strong> asume que la entrada es proyectada y genera un resultado que tiene un buffer en unidades de grados, lo cual es problemático, como veremos. En la segunda línea, <strong>sf</strong> usa silenciosamente el motor de geometría esférica S2 para calcular la extensión del buffer usando el valor por defecto de <code>max_cells = 1000</code> — fijado a <code>100</code> en la línea tres — las consecuencias se harán evidentes en breve (ver <code>?s2::s2_buffer_cells</code> para más detalles).</p>
+<p>Para resaltar el impacto del uso del motor de geometría S2 por <strong>sf</strong> para sistemas de coordenadas (geográficas) no proyectadas, lo desactivaremos temporalmente con el comando <code>sf_use_s2()</code> (que está activado, <code>TRUE</code>, por defecto), en el trozo de código que sigue. Al igual que <code>london_buff_no_crs</code>, el nuevo objeto <code>london_geo</code> es una abominación geográfica: tiene unidades de grados, lo que no tiene sentido en la gran mayoría de los casos:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">sf_use_s2</span>(<span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Spherical geometry (s2) switched off</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>london_buff_lonlat <span class="ot">=</span> <span class="fu">st_buffer</span>(london_geo, <span class="at">dist =</span> <span class="dv">1</span>) <span class="co"># incorrect result</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in st_buffer.sfc(st_geometry(x), dist, nQuadSegs, endCapStyle =
+endCapStyle, : st_buffer does not correctly buffer longitude/latitude data</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>dist is assumed to be in decimal degrees (arc_degrees).</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">sf_use_s2</span>(<span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Spherical geometry (s2) switched on</code></pre>
+</div>
+</div>
+<p>El mensaje de advertencia anterior indica problemas al realizar operaciones geométricas planas en datos lon/lat. Cuando las operaciones de geometría esférica están desactivadas, con el comando <code>sf::sf_use_s2(FALSE)</code>, los buffers (y otras operaciones geométricas) pueden dar como resultado salidas sin valor porque utilizan unidades de latitud y longitud, un mal sustituto de las unidades adecuadas de distancias como los metros.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>La distancia entre dos líneas de longitud, llamadas meridianos, es de unos 111 km en el ecuador (ejecute <code>geosphere::distGeo(c(0, 0), c(1, 0))</code> para encontrar la distancia exacta). En los polos se reduce a cero. En la latitud de Londres, por ejemplo, los meridianos están a menos de 70 km de distancia.</p>
+<p>Las líneas de latitud, por el contrario, son equidistantes entre sí independientemente de la latitud: siempre están separadas unos 111 km, incluso en el ecuador y cerca de los polos.</p>
+</div>
+</div>
+<p>Para las operaciones que implican distancias, como el buffering, la única forma de garantizar un buen resultado (sin utilizar motores de geometría esférica) es crear una copia proyectada de los datos y ejecutar la operación sobre ella.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>london_proj <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="dv">530000</span>, <span class="at">y =</span> <span class="dv">180000</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"y"</span>), <span class="at">crs =</span> <span class="st">"EPSG:27700"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El resultado es un nuevo objeto idéntico a <code>london</code>, pero reproyectado sobre un CRS adecuado (la British National Grid, que tiene un código EPSG de 27700 en este caso) que tiene unidades de metros. Podemos verificar que el CRS ha cambiado usando <code>st_crs()</code> como sigue (parte de la salida ha sido reemplazada por <code>...</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(london_proj)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Coordinate Reference System:</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   User input: EPSG:27700 </span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   wkt:</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PROJCRS["OSGB36 / British National Grid",</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     BASEGEOGCRS["OSGB36",</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         DATUM["Ordnance Survey of Great Britain 1936",</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             ELLIPSOID["Airy 1830",6377563.396,299.3249646,</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 LENGTHUNIT["metre",1]]],</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Entre los componentes más destacados de esta descripción se incluyen el código EPSG (<code>EPSG: 27700</code>) y la cadena detallada <code>wkt</code> (de la que sólo se muestran las 5 primeras líneas). El hecho de que las unidades del CRS, descritas en el campo LENGTHUNIT, sean metros (en lugar de grados) nos indica que se trata de un CRS proyectado: <code>st_is_longlat(london_proj)</code> devuelve ahora <code>FALSE</code> y las operaciones geométricas sobre <code>london_proj</code> funcionarán sin advertencia. Las operaciones de buffer sobre <code>london_proj</code> utilizarán GEOS y los resultados se devolverán con las unidades de distancia adecuadas. La siguiente línea de código crea un buffer alrededor de datos <em>proyectados</em> de exactamente 100 km:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>london_buff_projected <span class="ot">=</span> <span class="fu">st_buffer</span>(london_proj, <span class="dv">100000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Las geometrías de los tres objetos <code>london_buff*</code> que <em>tienen</em> un CRS especificado creados anteriormente (<code>london_buff_s2</code>, <code>london_buff_lonlat</code> y <code>london_buff_projected</code>) creados en los trozos de código anteriores se ilustran en la Figura @ref(fig:crs-buf).</p>
+<div class="cell" data-fig.asp="0.39">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `returnclass` argument of `ne_download()` sp as of rnaturalearth 1.0.0.
+ℹ Please use `sf` objects with {rnaturalearth}, support for Spatial objects
+  (sp) will be removed in a future release of the package.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'tmap'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:datasets':
+
+    rivers</code></pre>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="reproyeccion_files/figure-html/crs-buf-1.png" class="img-fluid figure-img" width="768"></p>
+<figcaption class="figure-caption">Buffers around London showing results created with the S2 spherical geometry engine on lon/lat data (left), projected data (middle) and lon/lat data without using spherical geometry (right). The left plot illustrates the result of buffering unprojected data with sf, which calls Google’s S2 spherical geometry engine by default with max cells set to 1000 (thin line). The thick ‘blocky’ line illustrates the result of the same operation with max cells set to 100.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Se ve claramente que los búferes basados en <code>s2</code> y CRS proyectados correctamente no están “aplastados”, lo que significa que cada parte del límite del búfer es equidistante de Londres. Los resultados generados a partir de CRSs lon/lat cuando no se utiliza <code>s2</code>, ya sea porque la entrada carece de CRS o porque <code>sf_use_s2()</code> está desactivada, están muy distorsionados, con el resultado alargado en el eje norte-sur, lo que pone de manifiesto los peligros de utilizar algoritmos que asumen datos proyectados en entradas lon/lat (como hace GEOS). Sin embargo, los resultados generados con S2 también están distorsionados, aunque de forma menos dramática. Los dos límites de los búferes de la figura izquierda están dentados, aunque esto sólo puede ser evidente o relevante en el caso del límite grueso que representa un búfer creado con el argumento <code>s2</code> <code>max_cells</code> fijado en 100. La lección es que los resultados obtenidos a partir de datos lon/lat con S2 también están distorsionados, aunque de forma menos dramática. La lección es que los resultados obtenidos a partir de datos lon/lat mediante S2 serán diferentes de los resultados obtenidos utilizando datos proyectados. La diferencia entre los buffers derivados de S2 y los buffers derivados de GEOS sobre datos proyectados se reducen a medida que aumenta el valor de <code>max_cells</code>: el valor “correcto” para este argumento puede depender de muchos factores y el valor por defecto 1000 es un valor por defecto razonable. Al elegir los valores de <code>max_cells</code>, la velocidad de cálculo debe equilibrarse con la resolución de los resultados. En situaciones en las que los límites curvos son ventajosos, puede ser apropiado transformar a un CRS proyectado antes de almacenar (o realizar otras operaciones geométricas).</p>
+<p>La importancia de los CRS (principalmente si son proyectados o geográficos) y los impactos de la configuración por defecto de <strong>sf</strong> de utilizar S2 para los buffers en los datos lon/lat quedan claros en el ejemplo anterior. En las secciones siguientes se profundiza en qué CRS utilizar cuando se necesitan CRS proyectados y en los detalles de la reproyección de objetos vectoriales y ráster.</p>
+</section>
+<section id="cuándo-reproyectar" class="level2">
+<h2 class="anchored" data-anchor-id="cuándo-reproyectar">¿Cuándo reproyectar?</h2>
+<p>La sección anterior mostraba cómo establecer el CRS manualmente, con <code>st_set_crs(london, "EPSG:4326")</code>. Sin embargo, en las aplicaciones del mundo real, los CRS suelen establecerse automáticamente cuando se leen los datos. En muchos proyectos, la principal tarea relacionada con los CRS es <em>transformar</em> objetos, de un CRS a otro. Pero, ¿cuándo deben transformarse los datos? ¿Y en qué CRS? No hay respuestas claras a estas preguntas y la selección del CRS siempre implica compromisos. Sin embargo, se ofrecen algunos principios generales que pueden ayudarle a decidir.</p>
+<p>En primer lugar, merece la pena considerar <em>cuándo transformar</em>. En algunos casos la transformación a un CRS geográfico es esencial, como cuando se publican datos en línea con el paquete <strong>leaflet</strong>. Otro caso es cuando hay que comparar o combinar dos objetos con diferentes CRS, como cuando intentamos encontrar la distancia entre dos objetos con diferentes CRS:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_distance</span>(london_geo, london_proj)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co"># &gt; Error: st_crs(x) == st_crs(y) is not TRUE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Para que los objetos <code>london</code> y <code>london_proj</code> sean geográficamente comparables, uno de ellos debe transformarse en el CRS del otro. Pero, ¿qué CRS utilizar? La respuesta depende del contexto: muchos proyectos, especialmente los de cartografía web, requieren salidas en EPSG:4326, en cuyo caso merece la pena transformar el objeto proyectado. Si, por el contrario, el proyecto requiere operaciones de geometría plana en lugar del motor de operaciones de geometría esférica (por ejemplo, para crear buffers con bordes suaves), puede merecer la pena transformar los datos con un CRS geográfico en un objeto equivalente con un CRS proyectado, como la British National Grid (EPSG:27700).</p>
+</section>
+<section id="qué-crs-utilizar" class="level2">
+<h2 class="anchored" data-anchor-id="qué-crs-utilizar">¿Qué CRS utilizar?</h2>
+<p>La cuestión de <em>qué CRS</em> es delicada, y rara vez hay una respuesta “correcta”: “No existen proyecciones que sirvan para todo, todas implican distorsión cuando se alejan del centro del marco especificado”.</p>
+<p>A la hora de seleccionar <strong>CRS geográficos</strong>, la respuesta suele ser <a href="https://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84">WGS84</a>. Se utiliza no sólo para la cartografía web, sino también porque los conjuntos de datos GPS y miles de conjuntos de datos ráster y vectoriales se proporcionan por defecto en este CRS. WGS84 es el CRS más común en el mundo, por lo que conviene conocer su código EPSG: 4326. Este “número mágico” puede utilizarse para convertir objetos con CRS proyectados inusuales en algo que se entienda ampliamente.</p>
+<p>¿Qué ocurre cuando se necesita un <strong>CRS proyectado</strong>? En algunos casos, no es algo que podamos decidir libremente: “a menudo, la elección de la proyección corre a cargo de un organismo cartográfico público”. Esto significa que, al trabajar con fuentes de datos locales, probablemente sea preferible trabajar con el CRS en el que se proporcionaron los datos, para garantizar la compatibilidad, aunque el CRS oficial no sea el más preciso.</p>
+<p>Una proyección utilizada habitualmente por defecto es la Universal Transverse Mercator (<a href="https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system">UTM</a>), un conjunto de CRS que divide la Tierra en 60 cuñas longitudinales y 20 segmentos latitudinales. La proyección transversal de Mercator utilizada por los CRSs UTM es conforme pero distorsiona áreas y distancias con severidad creciente con la distancia desde el centro de la zona UTM. Por lo tanto, ¡recomendamos utilizar UTM sólo cuando su objetivo sea preservar los ángulos de un área relativamente pequeña!</p>
+<p>Casi todos los lugares de la Tierra tienen un código UTM, como “60H”, que se refiere al norte de Nueva Zelanda, donde se inventó R. Los códigos EPSG de UTM van secuencialmente de 32601 a 32660 para los lugares del hemisferio norte y de 32701 a 32760 para los lugares del hemisferio sur.</p>
+<p>Para mostrar cómo funciona el sistema, vamos a crear una función, <code>lonlat2UTM()</code> para calcular el código EPSG asociado a cualquier punto del planeta como <a href="https://stackoverflow.com/a/9188972/">sigue</a>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>lonlat2UTM <span class="ot">=</span> <span class="cf">function</span>(lonlat) {</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  utm <span class="ot">=</span> (<span class="fu">floor</span>((lonlat[<span class="dv">1</span>] <span class="sc">+</span> <span class="dv">180</span>) <span class="sc">/</span> <span class="dv">6</span>) <span class="sc">%%</span> <span class="dv">60</span>) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (lonlat[<span class="dv">2</span>] <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    utm <span class="sc">+</span> <span class="dv">32600</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span>{</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    utm <span class="sc">+</span> <span class="dv">32700</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El siguiente comando utiliza esta función para identificar la zona UTM y el código EPSG asociado para Auckland y Londres:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lonlat2UTM</span>(<span class="fu">c</span>(<span class="fl">174.7</span>, <span class="sc">-</span><span class="fl">36.9</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 32760</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lonlat2UTM</span>(<span class="fu">st_coordinates</span>(london))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 32630</code></pre>
+</div>
+</div>
+<p>Actualmente, también disponemos de herramientas que nos ayudan a seleccionar un CRS adecuado, entre las que se incluye el paquete <strong>crssuggest</strong>. La función principal de este paquete, <code>suggest_crs()</code>, toma un objeto espacial con CRS geográfico y devuelve una lista de posibles CRS proyectados que podrían utilizarse para el área dada.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Otra herramienta útil es una página web <a href="https://jjimenezshaw.github.io/crs-explorer/" class="uri">https://jjimenezshaw.github.io/crs-explorer/</a> que enumera los CRS en función de la ubicación y el tipo seleccionados.</p>
+<p>En los casos en los que no esté claro cuál es el CRS adecuado, la elección del CRS debe depender de las propiedades que sea más importante preservar en los mapas y análisis posteriores. Todos los CRS son de igual área, equidistantes, conformes (con formas que permanecen inalteradas), o alguna combinación de los mismos. Pueden crearse CRS personalizados con parámetros locales para una región de interés y pueden utilizarse múltiples CRS en proyectos cuando ningún CRS se adapte a todas las tareas. Los “cálculos geodésicos” pueden proporcionar un recurso alternativo si no hay CRS adecuados. Independientemente del CRS proyectado que se utilice, los resultados pueden no ser precisos para geometrías que abarquen cientos de kilómetros.</p>
+<p>A la hora de decidirse por un SRI personalizado, recomendamos lo siguiente:</p>
+<ul>
+<li>Una proyección acimutal igual al área de Lambert (<a href="https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection">LAEA</a>) para una proyección local personalizada (establezca la latitud y la longitud del origen en el centro del área de estudio), que es una proyección igual al área en todas las ubicaciones pero distorsiona las formas más allá de miles de kilómetros.</li>
+<li>Proyecciones acimutales equidistantes (<a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">AEQD</a>) para una distancia en línea recta específicamente precisa entre un punto y el punto central de la proyección local.</li>
+<li>Proyecciones cónicas conformes de Lambert (<a href="https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection">LCC</a>) para regiones que abarcan miles de kilómetros, con el cono ajustado para mantener unas propiedades de distancia y área razonables entre las líneas secantes.</li>
+<li>Proyecciones estereográficas (<a href="https://en.wikipedia.org/wiki/Stereographic_projection">STERE</a>) para regiones polares, pero teniendo cuidado de no confiar en cálculos de área y distancia a miles de kilómetros del centro.</li>
+</ul>
+<p>Un posible enfoque para seleccionar automáticamente un CRS proyectado específico para un conjunto de datos local es crear una proyección equidistante azimutal (<a href="https://en.wikipedia.org/wiki/Azimuthal_equidistant_projection">AEQD</a>) para el punto central del área de estudio. Esto implica crear un CRS personalizado (sin código EPSG) con unidades de metros basado en el punto central de un conjunto de datos. Tenga en cuenta que este método debe utilizarse con precaución: ningún otro conjunto de datos será compatible con el CRS personalizado creado y es posible que los resultados no sean precisos cuando se utilicen en conjuntos de datos extensos que abarquen cientos de kilómetros.</p>
+<p>Los principios descritos en esta sección se aplican tanto a los conjuntos de datos vectoriales como a los ráster. Sin embargo, algunas características de la transformación CRS son exclusivas de cada modelo de datos geográficos.</p>
+</section>
+<section id="reproyección-de-geometrías-vectoriales" class="level2">
+<h2 class="anchored" data-anchor-id="reproyección-de-geometrías-vectoriales">Reproyección de geometrías vectoriales</h2>
+<p>La reproyección de vectores consiste en transformar las coordenadas de los puntos que forman los vértices de las rectas y los polígonos.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>london2 <span class="ot">=</span> <span class="fu">st_transform</span>(london_geo, <span class="st">"EPSG:27700"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Ahora que se ha creado una versión transformada de <code>london</code>, utilizando la función <strong>sf</strong> <code>st_transform()</code>, se puede encontrar la distancia entre las dos representaciones de Londres. Puede sorprender que <code>londres</code> y <code>londres2</code> estén a poco más de 2 km de distancia.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_distance</span>(london2, london_proj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Units: [m]
+         [,1]
+[1,] 2016.259</code></pre>
+</div>
+</div>
+<p>Las funciones para consultar y reproyectar CRS se muestran a continuación con referencia a <code>cycle_hire_osm</code>, un objeto <code>sf</code> de <strong>spData</strong> que representa “estaciones de carga” donde se pueden alquilar bicicletas en Londres. Los CRS de los objetos <code>sf</code> pueden consultarse y establecerse con la función <code>st_crs()</code>. La salida se imprime como múltiples líneas de texto que contienen información sobre el sistema de coordenadas:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(cycle_hire_osm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: EPSG:4326 
+  wkt:
+GEOGCS["WGS 84",
+    DATUM["WGS_1984",
+        SPHEROID["WGS 84",6378137,298.257223563,
+            AUTHORITY["EPSG","7030"]],
+        AUTHORITY["EPSG","6326"]],
+    PRIMEM["Greenwich",0,
+        AUTHORITY["EPSG","8901"]],
+    UNIT["degree",0.0174532925199433,
+        AUTHORITY["EPSG","9122"]],
+    AUTHORITY["EPSG","4326"]]</code></pre>
+</div>
+</div>
+<p>Los componentes principales del CRS, <code>User input</code> y <code>wkt</code>, se imprimen como una sola entidad, la salida de <code>st_crs()</code> es de hecho una lista con nombre de la clase <code>crs</code> con dos elementos, cadenas de caracteres simples llamadas <code>input</code> y <code>wkt</code>, como se muestra en la salida del siguiente trozo de código:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>crs_lnd <span class="ot">=</span> <span class="fu">st_crs</span>(london_geo)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(crs_lnd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "crs"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(crs_lnd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "input" "wkt"  </code></pre>
+</div>
+</div>
+<p>Se pueden recuperar elementos adicionales con el operador <code>$</code>, incluyendo <code>Name</code>, <code>proj4string</code> y <code>epsg</code> (ver <a href="https://r-spatial.github.io/sf/reference/st_crs.html"><code>?st_crs</code></a> y el tutorial CRS y tranformación en el <a href="https://gdal.org/tutorials/osr_api_tut.html#querying-coordinate-reference-system">sitio web</a> de GDAL para más detalles):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>crs_lnd<span class="sc">$</span>Name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "WGS 84"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>crs_lnd<span class="sc">$</span>proj4string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "+proj=longlat +datum=WGS84 +no_defs"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>crs_lnd<span class="sc">$</span>epsg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4326</code></pre>
+</div>
+</div>
+<p>La representación WKT almacenada en el elemento <code>$wkt</code> del objeto <code>crs_lnd</code> es la última fuente de verdad. Esto significa que las salidas del trozo de código anterior son consultas de la representación <code>wkt</code> proporcionada por PROJ, en lugar de atributos inherentes del objeto y su CRS.</p>
+<p>Tanto los elementos <code>wkt</code> como <code>User Input</code> del CRS se modifican cuando se transforma el CRS del objeto. En el siguiente fragmento de código, creamos una nueva versión de <code>cycle_hire_osm</code> con un CRS proyectado (sólo se muestran las 4 primeras líneas de la salida CRS por brevedad):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>cycle_hire_osm_projected <span class="ot">=</span> <span class="fu">st_transform</span>(cycle_hire_osm, <span class="st">"EPSG:27700"</span>)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(cycle_hire_osm_projected)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Coordinate Reference System:</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   User input: EPSG:27700 </span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   wkt:</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PROJCRS["OSGB36 / British National Grid",</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>El objeto resultante tiene un nuevo CRS con un código EPSG 27700. Pero, ¿cómo averiguar más detalles sobre este código EPSG, o sobre cualquier código?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>crs_lnd_new <span class="ot">=</span> <span class="fu">st_crs</span>(<span class="st">"EPSG:27700"</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>crs_lnd_new<span class="sc">$</span>Name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "OSGB36 / British National Grid"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>crs_lnd_new<span class="sc">$</span>proj4string</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +units=m +no_defs"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>crs_lnd_new<span class="sc">$</span>epsg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 27700</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>La impresión de un objeto espacial en la consola devuelve automáticamente su sistema de referencia de coordenadas. Para acceder a él y modificarlo explícitamente, utilice la función <code>st_crs</code>, por ejemplo, <code>st_crs(ciclo_hire_osm)</code>.</p>
+</div>
+</div>
+</section>
+<section id="reproj-ras" class="level2">
+<h2 class="anchored" data-anchor-id="reproj-ras">Reproyección de geometrías raster</h2>
+<p>Existen diferencias importantes en la reproyección de vectores y rásters: transformar un objeto vectorial implica cambiar las coordenadas de cada vértice, pero esto no se aplica a los datos raster. Los rásters se componen de celdas rectangulares del mismo tamaño (expresadas en unidades cartográficas, como grados o metros), por lo que suele ser impracticable transformar las coordenadas de los píxeles por separado. La reproyección de rásters implica la creación de un nuevo objeto ráster, a menudo con un número de columnas y filas distinto del original. A continuación, hay que volver a estimar los atributos, lo que permite “rellenar” los nuevos píxeles con los valores adecuados. En otras palabras, la reproyección ráster puede considerarse como dos operaciones espaciales separadas: una reproyección vectorial de la extensión ráster a otro CRS y el cálculo de nuevos valores de píxel mediante remuestreo. Por lo tanto, en la mayoría de los casos en que se utilizan datos ráster y vectoriales, es mejor evitar la reproyección de rásteres y reproyectar vectores en su lugar.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>La reproyección de los rásters regulares también se conoce como “warping”. Además, existe una segunda operación similar denominada “transformación”. En lugar de remuestrear todos los valores, deja todos los valores intactos pero vuelve a calcular nuevas coordenadas para cada celda del raster, cambiando la geometría de la cuadrícula. Por ejemplo, podría convertir el ráster de entrada (una malla regular) en una malla curvilínea. La operación de transformación puede realizarse en R utilizando <a href="https://r-spatial.github.io/stars/articles/stars5.html">el paquete <strong>stars</strong></a>.</p>
+</div>
+</div>
+<p>El proceso de reproyección raster se realiza con <code>project()</code> del paquete <strong>terra</strong>. <code>project()</code> toma un objeto geográfico (un conjunto de datos raster en este caso) y alguna representación CRS como segundo argumento. Nota al margen: el segundo argumento también puede ser un objeto ráster existente con un CRS diferente.</p>
+<p>Veamos dos ejemplos de transformación ráster: el uso de datos categóricos y continuos. Los datos de cobertura del suelo suelen representarse mediante mapas categóricos. El archivo <code>nlcd.tif</code> proporciona información para una pequeña área en Utah, EE.UU. obtenida de <a href="https://www.mrlc.gov/data/nlcd-2011-land-cover-conus">National Land Cover Database 2011</a> en el CRS NAD83 / UTM zona 12N, como se muestra en la salida del fragmento de código a continuación:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>cat_raster <span class="ot">=</span> <span class="fu">rast</span>(<span class="fu">system.file</span>(<span class="st">"raster/nlcd.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>))</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">crs</span>(cat_raster)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; PROJCRS["NAD83 / UTM zone 12N",</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>En esta región se distinguieron 8 clases de ocupación del suelo (la lista completa de las clases de ocupación del suelo de la NLCD2011 puede consultarse en <a href="https://www.mrlc.gov/data/legends/national-land-cover-database-2011-nlcd2011-legend">mrlc.gov</a>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(cat_raster)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="kable-table">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">levels</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Water</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Developed</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Barren</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Forest</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Shrubland</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Herbaceous</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cultivated</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Wetlands</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>Al reproyectar rásters categóricos, los valores estimados deben ser los mismos que los del original. Para ello se puede utilizar el método del vecino más cercano (<code>near</code>), que establece el valor de cada nueva celda en el valor de la celda más cercana (centro) del ráster de entrada. Un ejemplo es la reproyección de <code>cat_raster</code> a WGS84, un CRS geográfico muy adecuado para la cartografía web. El primer paso es obtener la definición PROJ de este CRS, lo que puede hacerse, por ejemplo, utilizando la página web <a href="http://spatialreference.org/ref/epsg/wgs-84/">http://spatialreference.org</a>. El último paso es reproyectar el ráster con la función <code>project()</code> que, en el caso de datos categóricos, utiliza el método del vecino más cercano (<code>near</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>cat_raster_wgs84 <span class="ot">=</span> <span class="fu">project</span>(cat_raster, <span class="st">"EPSG:4326"</span>, <span class="at">method =</span> <span class="st">"near"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Muchas propiedades del nuevo objeto difieren del anterior, incluido el número de columnas y filas (y, por tanto, el número de celdas), la resolución (transformada de metros a grados) y la extensión.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Key attributes in the original (‘cat_raster’) and projected (‘cat_raster_wgs84’) categorical raster datasets.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">CRS</th>
+<th style="text-align: right;">nrow</th>
+<th style="text-align: right;">ncol</th>
+<th style="text-align: right;">ncell</th>
+<th style="text-align: right;">resolution</th>
+<th style="text-align: right;">unique_categories</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">NAD83</td>
+<td style="text-align: right;">1359</td>
+<td style="text-align: right;">1073</td>
+<td style="text-align: right;">1458207</td>
+<td style="text-align: right;">31.5275</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WGS84</td>
+<td style="text-align: right;">1246</td>
+<td style="text-align: right;">1244</td>
+<td style="text-align: right;">1550024</td>
+<td style="text-align: right;">0.0003</td>
+<td style="text-align: right;">9</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>La reproyección de rásters numéricos (con valores <code>numéricos</code> o en este caso <code>enteros</code>) sigue un procedimiento casi idéntico. Esto se demuestra a continuación con <code>srtm.tif</code> de <a href="https://www2.jpl.nasa.gov/srtm/">the Shuttle Radar Topography Mission (SRTM)</a>, que representa la altura en metros sobre el nivel del mar (elevación) con el WGS84 CRS:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>con_raster <span class="ot">=</span> <span class="fu">rast</span>(<span class="fu">system.file</span>(<span class="st">"raster/srtm.tif"</span>, <span class="at">package =</span> <span class="st">"spDataLarge"</span>))</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="fu">crs</span>(con_raster)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "GEOGCRS[\"WGS 84\",\n    ENSEMBLE[\"World Geodetic System 1984 ensemble\",\n        MEMBER[\"World Geodetic System 1984 (Transit)\"],\n        MEMBER[\"World Geodetic System 1984 (G730)\"],\n        MEMBER[\"World Geodetic System 1984 (G873)\"],\n        MEMBER[\"World Geodetic System 1984 (G1150)\"],\n        MEMBER[\"World Geodetic System 1984 (G1674)\"],\n        MEMBER[\"World Geodetic System 1984 (G1762)\"],\n        MEMBER[\"World Geodetic System 1984 (G2139)\"],\n        ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n            LENGTHUNIT[\"metre\",1]],\n        ENSEMBLEACCURACY[2.0]],\n    PRIMEM[\"Greenwich\",0,\n        ANGLEUNIT[\"degree\",0.0174532925199433]],\n    CS[ellipsoidal,2],\n        AXIS[\"geodetic latitude (Lat)\",north,\n            ORDER[1],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        AXIS[\"geodetic longitude (Lon)\",east,\n            ORDER[2],\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n    USAGE[\n        SCOPE[\"Horizontal component of 3D system.\"],\n        AREA[\"World.\"],\n        BBOX[-90,-180,90,180]],\n    ID[\"EPSG\",4326]]"</code></pre>
+</div>
+</div>
+<p>Reproyectaremos este conjunto de datos en un CRS proyectado, pero <em>no</em> con el método del vecino más próximo, que es apropiado para datos categóricos. En su lugar, utilizaremos el método bilineal, que calcula el valor de la celda de salida basándose en las cuatro celdas más cercanas de la trama original. Los valores del conjunto de datos proyectado son la media ponderada por distancia de los valores de estas cuatro celdas: cuanto más cerca esté la celda de entrada del centro de la celda de salida, mayor será su peso. Los siguientes comandos crean una cadena de texto que representa WGS 84 / UTM zona 12N, y reproyectan el ráster en este CRS, utilizando el método <code>bilineal</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>con_raster_ea <span class="ot">=</span> <span class="fu">project</span>(con_raster, <span class="st">"EPSG:32612"</span>, <span class="at">method =</span> <span class="st">"bilinear"</span>)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">crs</span>(con_raster_ea)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "PROJCRS[\"WGS 84 / UTM zone 12N\",\n    BASEGEOGCRS[\"WGS 84\",\n        ENSEMBLE[\"World Geodetic System 1984 ensemble\",\n            MEMBER[\"World Geodetic System 1984 (Transit)\"],\n            MEMBER[\"World Geodetic System 1984 (G730)\"],\n            MEMBER[\"World Geodetic System 1984 (G873)\"],\n            MEMBER[\"World Geodetic System 1984 (G1150)\"],\n            MEMBER[\"World Geodetic System 1984 (G1674)\"],\n            MEMBER[\"World Geodetic System 1984 (G1762)\"],\n            MEMBER[\"World Geodetic System 1984 (G2139)\"],\n            ELLIPSOID[\"WGS 84\",6378137,298.257223563,\n                LENGTHUNIT[\"metre\",1]],\n            ENSEMBLEACCURACY[2.0]],\n        PRIMEM[\"Greenwich\",0,\n            ANGLEUNIT[\"degree\",0.0174532925199433]],\n        ID[\"EPSG\",4326]],\n    CONVERSION[\"UTM zone 12N\",\n        METHOD[\"Transverse Mercator\",\n            ID[\"EPSG\",9807]],\n        PARAMETER[\"Latitude of natural origin\",0,\n            ANGLEUNIT[\"degree\",0.0174532925199433],\n            ID[\"EPSG\",8801]],\n        PARAMETER[\"Longitude of natural origin\",-111,\n            ANGLEUNIT[\"degree\",0.0174532925199433],\n            ID[\"EPSG\",8802]],\n        PARAMETER[\"Scale factor at natural origin\",0.9996,\n            SCALEUNIT[\"unity\",1],\n            ID[\"EPSG\",8805]],\n        PARAMETER[\"False easting\",500000,\n            LENGTHUNIT[\"metre\",1],\n            ID[\"EPSG\",8806]],\n        PARAMETER[\"False northing\",0,\n            LENGTHUNIT[\"metre\",1],\n            ID[\"EPSG\",8807]]],\n    CS[Cartesian,2],\n        AXIS[\"(E)\",east,\n            ORDER[1],\n            LENGTHUNIT[\"metre\",1]],\n        AXIS[\"(N)\",north,\n            ORDER[2],\n            LENGTHUNIT[\"metre\",1]],\n    USAGE[\n        SCOPE[\"Engineering survey, topographic mapping.\"],\n        AREA[\"Between 114°W and 108°W, northern hemisphere between equator and 84°N, onshore and offshore. Canada - Alberta; Northwest Territories (NWT); Nunavut; Saskatchewan. Mexico. United States (USA).\"],\n        BBOX[0,-114,84,-108]],\n    ID[\"EPSG\",32612]]"</code></pre>
+</div>
+</div>
+<p>La reproyección raster sobre variables numéricas también provoca pequeños cambios en los valores y propiedades espaciales, como el número de celdas, la resolución y la extensión. Estos cambios se muestran en la Tabla @ref(tab:rastercrs)<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<caption>Key attributes in the original (‘con_raster’) and projected (‘con_raster_ea’) continuous raster datasets.</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">CRS</th>
+<th style="text-align: right;">nrow</th>
+<th style="text-align: right;">ncol</th>
+<th style="text-align: right;">ncell</th>
+<th style="text-align: right;">resolution</th>
+<th style="text-align: right;">mean</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">WGS84</td>
+<td style="text-align: right;">457</td>
+<td style="text-align: right;">465</td>
+<td style="text-align: right;">212505</td>
+<td style="text-align: right;">0.0008</td>
+<td style="text-align: right;">1842.548</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UTM zone 12N</td>
+<td style="text-align: right;">515</td>
+<td style="text-align: right;">422</td>
+<td style="text-align: right;">217330</td>
+<td style="text-align: right;">83.5334</td>
+<td style="text-align: right;">1842.083</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Por supuesto, las limitaciones de las proyecciones de la Tierra en 2D se aplican tanto a los datos vectoriales como a los ráster. En el mejor de los casos, podemos cumplir dos de las tres propiedades espaciales (distancia, área, dirección). Por lo tanto, la tarea a realizar determina qué proyección elegir. Por ejemplo, si estamos interesados en una densidad (puntos por celda de cuadrícula o habitantes por celda de cuadrícula) deberíamos utilizar una proyección de igual área.</p>
+</div>
+</div>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Se pueden utilizar otras formas de referirse a CRS únicos, con cinco tipos de identificadores (código EPSG, PostGIS SRID, INTERNAL SRID, proj-string y cadenas WKT) aceptados por <a href="https://docs.qgis.org/3.16/en/docs/pyqgis_developer_cookbook/crs.html?highlight=srid">QGIS</a> y otros tipos de identificadores como una variante más verbosa del identificador <code>EPSG:4326</code>, <code>urn:ogc:def:crs:EPSG::4326</code>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Este paquete también permite averiguar el verdadero CRS de los datos sin ninguna información CRS adjunta<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p> Otro cambio menor es que la clase de los valores en el nuevo conjunto de datos ráster proyectado es <code>numérico</code>. Esto se debe a que el método <code>bilineal</code> trabaja con datos continuos y los resultados raramente se convierten en valores enteros. Esto puede tener implicaciones en el tamaño de los archivos cuando se guardan los conjuntos de datos ráster.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

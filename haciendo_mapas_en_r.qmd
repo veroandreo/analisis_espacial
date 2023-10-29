@@ -1,5 +1,5 @@
 ---
-title: "Making maps in R"
+title: "Haciendo mapas en R"
 author: "Veronica Andreo"
 date: today
 format: 
@@ -8,13 +8,9 @@ format:
     df-print: kable
 ---
 
-# Making maps with R {#adv-map}
+- Este capítulo requiere los siguientes paquetes que ya hemos estado utilizando:
 
-## Prerequisites {-}
-
-- This chapter requires the following packages that we have already been using:
-
-```{r 08-mapping-1, message=FALSE }
+```{r, message=FALSE }
 library(sf)
 library(terra)
 library(dplyr)
@@ -22,83 +18,67 @@ library(spData)
 library(spDataLarge)
 ```
 
-- In addition, it uses the following visualization packages (also install shiny if you want to develop interactive mapping applications):
+- Además, utiliza los siguientes paquetes de visualización:
 
-```{r 08-mapping-2, message=FALSE}
-remotes::install_github("r-tmap/tmap")
+```{r, message=FALSE}
+#remotes::install_github("r-tmap/tmap")
 library(tmap)    # for static and interactive maps
 library(leaflet) # for interactive maps
 library(ggplot2) # tidyverse data visualization package
 ```
 
-- You also need to read in a couple of datasets as follows for Section \@ref(spatial-ras):
+- También es necesario leer en un par de conjuntos de datos de la siguiente manera:
 
-```{r 04-spatial-operations-1-1}
+```{r}
 nz_elev = rast(system.file("raster/nz_elev.tif", package = "spDataLarge"))
 ```
 
-## Introduction
+## Introducción
 
-A satisfying and important aspect of geographic research is communicating the results.
-Map making --- the art of cartography --- is an ancient skill involving communication, attention to detail, and an element of creativity.
-Static mapping in R is straightforward with the `plot()` function, as we saw in Section \@ref(basic-map).
-It is possible to create advanced maps using base R methods [@murrell_r_2016].
-The focus of this chapter, however, is cartography with dedicated map-making packages.
-When learning a new skill, it makes sense to gain depth-of-knowledge in one area before branching out.
-Map making is no exception, hence this chapter's coverage of one package (**tmap**) in depth rather than many superficially.
+Un aspecto importante y satisfactorio de la investigación geográfica es la comunicación de los resultados.
+La elaboración de mapas, el arte de la cartografía, es una habilidad antigua que implica comunicación, atención al detalle y un elemento de creatividad.
+La creación de mapas estáticos en R es sencilla con la función `plot()`. Sin embargo, este capítulo se centra en la cartografía con paquetes dedicados a la creación de mapas.
+Específicamente, en este capítulo veremos en profundidad el paquete (**tmap**).
 
-In addition to being fun and creative, cartography also has important practical applications.
-A carefully crafted map can be the best way of communicating the results of your work, but poorly designed maps can leave a bad impression.
-Common design issues include poor placement, size and readability of text and careless selection of colors, as outlined in the style [guide](https://www.tandf.co.uk//journals/authors/style/TJOM-suppmaterial-quick-guide.pdf) of the Journal of Maps.
-Furthermore, poor map making can hinder the communication of results [@brewer_designing_2015]:
+Además de ser divertida y creativa, la cartografía también tiene importantes aplicaciones prácticas.
+Un mapa cuidadosamente elaborado puede ser la mejor forma de comunicar los resultados de su trabajo, pero los mapas mal diseñados pueden dejar una mala impresión.
+Entre los problemas de diseño más comunes se encuentran la mala colocación, tamaño y legibilidad del texto y la selección descuidada de colores, como se indica en la [guía de estilo](https://www.tandf.co.uk//journals/authors/style/TJOM-suppmaterial-quick-guide.pdf) del Journal of Maps.
+Además, un mal diseño de los mapas puede dificultar la comunicación de los resultados:
 
-> Amateur-looking maps can undermine your audience’s ability to understand important information and weaken the presentation of a professional data investigation.
-Maps have been used for several thousand years for a wide variety of purposes.
-Historic examples include maps of buildings and land ownership in the Old Babylonian dynasty more than 3000 years ago and Ptolemy's world map in his masterpiece *Geography* nearly 2000 years ago [@talbert_ancient_2014].
+> Los mapas de aspecto amateur pueden mermar la capacidad de su público para comprender información importante y debilitar la presentación de una investigación de datos profesional.
+Los mapas se utilizan desde hace miles de años con fines muy diversos.
+Algunos ejemplos históricos son los mapas de edificios y propiedad de la tierra de la antigua dinastía babilónica, hace más de 3.000 años, y el mapamundi de Ptolomeo en su obra maestra *Geografía*, hace casi 2.000 años.
 
-Map making has historically been an activity undertaken only by, or on behalf of, the elite.
-This has changed with the emergence of open source mapping software such as the R package **tmap** and the 'print layout' in QGIS\index{QGIS} which enable anyone to make high-quality maps, enabling 'citizen science'.
-Maps are also often the best way to present the findings of geocomputational research in a way that is accessible.
-Map making is therefore a critical part of geocomputation\index{geocomputation} and its emphasis not only on describing, but also *changing* the world.
+Históricamente, la elaboración de mapas ha sido una actividad realizada únicamente por la élite o en su nombre.
+Esto ha cambiado con la aparición de software cartográfico de código abierto, como **tmap** en R y el "diseño de impresión" de QGIS, que permiten a cualquiera elaborar mapas de alta calidad.
+Los mapas suelen ser también la mejor manera de presentar los resultados de la investigación geocomputacional de forma accesible.
+La elaboración de mapas es, por tanto, una parte fundamental de la geocomputación y su énfasis no sólo en describir, sino también en *cambiar* el mundo.
 
-This chapter shows how to make a wide range of maps.
-The next section covers a range of static maps, including aesthetic considerations, facets and inset maps.
-Sections \@ref(animated-maps) to \@ref(mapping-applications) cover animated and interactive maps (including web maps and mapping applications).
-Finally, Section \@ref(other-mapping-packages) covers a range of alternative map-making packages including **ggplot2** and **cartogram**.
+Este capítulo muestra cómo hacer una amplia gama de mapas.
 
-## Static maps
+## Mapas estáticos
 
-\index{map making!static maps}
-Static maps are the most common type of visual output from geocomputation.
-They are usually stored in standard formats include `.png` and `.pdf` for graphical raster and vector outputs, respectively.
-Initially, static maps were the only type of maps that R could produce.
-Things have advanced with the release of **sp** [see @pebesma_classes_2005], and many map-making techniques, functions, and packages have been developed since then.
-However, despite the innovation of interactive mapping, static plotting was still the emphasis of geographic data visualization in R a decade later [@cheshire_spatial_2015].
+Los mapas estáticos son el tipo más común de salida visual de la geocomputación.
+Suelen almacenarse en formatos estándar como `.png` y `.pdf` para salidas gráficas raster y vectoriales, respectivamente.
 
-The generic `plot()` function is often the fastest way to create static maps from vector and raster spatial objects (see sections \@ref(basic-map) and \@ref(basic-map-raster)).
-Sometimes, simplicity and speed are priorities, especially during the development phase of a project, and this is where `plot()` excels.
-The base R approach is also extensible, with `plot()` offering dozens of arguments.
-Another approach is the **grid** package which allows low-level control of static maps, as illustrated in Chapter [14](https://www.stat.auckland.ac.nz/~paul/RG2e/chapter14.html) of @murrell_r_2016.
-This part of the book focuses on **tmap** and emphasizes the essential aesthetic and layout options.
+La función genérica `plot()` suele ser la forma más rápida de crear mapas estáticos a partir de objetos espaciales vectoriales y ráster.
+A veces, la simplicidad y la velocidad son prioritarias, especialmente durante la fase de desarrollo de un proyecto, y aquí es donde destaca `plot()`.
+El enfoque base de R es también extensible, con `plot()` ofreciendo docenas de argumentos.
+Otro enfoque es el paquete **grid** que permite un control de bajo nivel de los mapas estáticos.
 
-\index{tmap (package)}
-**tmap** is a powerful and flexible map-making package with sensible defaults.
-It has a concise syntax that allows for the creation of attractive maps with minimal code which will be familiar to **ggplot2** users.
-It also has the unique capability to generate static and interactive maps using the same code via `tmap_mode()`.
-Finally, it accepts a wider range of spatial classes (including **sf** and **terra** objects) than alternatives such as **ggplot2**.
-<!--toDo:jn-->
-<!-- update the below vignettes links -->
-<!-- (see the vignettes [`tmap-getstarted`](https://cran.r-project.org/web/packages/tmap/vignettes/tmap-getstarted.html) and [`tmap-changes-v2`](https://cran.r-project.org/web/packages/tmap/vignettes/tmap-changes-v2.html), as well as @tennekes_tmap_2018, for further documentation). -->
+**tmap** es un paquete de creación de mapas potente y flexible con valores predeterminados sensibles.
+Tiene una sintaxis concisa que permite la creación de mapas atractivos con un código mínimo que será familiar a los usuarios de **ggplot2**.
+También tiene la capacidad única de generar mapas estáticos e interactivos utilizando el mismo código a través de `tmap_mode()`.
+Por último, acepta una gama más amplia de clases espaciales (incluidos los objetos **sf** y **terra**) que otras alternativas como **ggplot2**.
 
-### tmap basics
+### Fundamentos de tmap
 
-\index{tmap (package)!basics}
-Like **ggplot2**, **tmap** is based on the idea of a 'grammar of graphics' [@wilkinson_grammar_2005].
-This involves a separation between the input data and the aesthetics (how data are visualized): each input dataset can be 'mapped' in a range of different ways including location on the map (defined by data's `geometry`), color, and other visual variables.
-The basic building block is `tm_shape()` (which defines input data: an vector or raster object), followed by one or more layer elements such as `tm_fill()` and `tm_dots()`.
-This layering is demonstrated in the chunk below, which generates the maps presented in Figure \@ref(fig:tmshape):
+Al igual que **ggplot2**, **tmap** se basa en la idea de una "gramática de los gráficos".
+Esto implica una separación entre los datos de entrada y la estética (cómo se visualizan los datos): cada conjunto de datos de entrada puede ser "mapeado" de diferentes maneras, incluyendo la ubicación en el mapa (definida por la "geometría" de los datos), el color y otras variables visuales.
+El elemento básico es `tm_shape()` (que define los datos de entrada: un objeto vectorial o ráster), seguido de uno o más elementos de capa como `tm_fill()` y `tm_dots()`.
+Esta estratificación se muestra en el siguiente fragmento:
 
-```{r 08-mapping-3, eval=FALSE}
+```{r, eval=FALSE}
 # Add fill layer to nz shape
 tm_shape(nz) +
   tm_fill() 
@@ -111,72 +91,47 @@ tm_shape(nz) +
   tm_borders() 
 ```
 
-```{r tmshape, echo=FALSE, message=FALSE, fig.cap="New Zealand's shape plotted with fill (left), border (middle) and fill and border (right) layers added using tmap functions.", fig.scap="New Zealand's shape plotted using tmap functions."}
-source("https://github.com/geocompx/geocompr/raw/main/code/09-tmshape.R", print.eval = TRUE)
-```
+En este caso, el objeto que se pasa a `tm_shape()` es `nz`, un objeto `sf` que representa las regiones de Nueva Zelanda.
+Se añaden capas para representar `nz` visualmente, con `tm_fill()` y `tm_borders()` creando áreas sombreadas y contornos de bordes, respectivamente.
 
-The object passed to `tm_shape()` in this case is `nz`, an `sf` object representing the regions of New Zealand (see Section \@ref(intro-sf) for more on `sf` objects).
-Layers are added to represent `nz` visually, with `tm_fill()` and `tm_borders()` creating shaded areas (left panel) and border outlines (middle panel) in Figure \@ref(fig:tmshape), respectively.
+Se trata de un enfoque intuitivo para la creación de mapas:
+la tarea habitual de *añadir* nuevas capas se realiza mediante el operador de suma `+`, seguido de `tm_*()`.
+El asterisco (\*) se refiere a una amplia gama de tipos de capas que tienen nombres autoexplicativos, entre los que se incluyen:
 
-This is an intuitive approach to map making:
-the common task of *adding* new layers is undertaken by the addition operator `+`, followed by `tm_*()`.
-The asterisk (\*) refers to a wide range of layer types which have self-explanatory names including:
+- `tm_fill()`: áreas sombreadas para (mutli)polígonos
+- `tm_borders()`: contornos de bordes para (mutli)polígonos
+- `tm_polygons()`: ambos, áreas sombreadas y contornos de bordes para (mutli)polígonos
+- `tm_lines()`: líneas para (mutli)linestrings
+- `tm_symbols()`: símbolos para (mutli)puntos, (mutli)líneas y (mutli)polígonos
+- `tm_raster()`: celdas coloreadas de datos ráster (también existe `tm_rgb()` para rásters con tres capas)
+- `tm_text()`: información de texto para (mutli)puntos, (mutli)líneas y (mutli)polígonos
 
-- `tm_fill()`: shaded areas for (mutli)polygons
-- `tm_borders()`: border outlines for (mutli)polygons
-- `tm_polygons()`: both, shaded areas and border outlines for (mutli)polygons
-- `tm_lines()`: lines for (mutli)linestrings
-- `tm_symbols()`: symbols for (mutli)points, (mutli)linestrings, and (mutli)polygons
-- `tm_raster()`: colored cells of raster data (there is also `tm_rgb()` for rasters with three layers)
-- `tm_text()`: text information for (mutli)points, (mutli)linestrings, and (mutli)polygons
+### Objetos de mapa
 
-<!--toDo: jn-->
-<!-- update help link -->
-<!--
-See `help("tmap-element")` for a full list of possible layer types.
-This layering is illustrated in the right panel of Figure \@ref(fig:tmshape), the result of adding a border *on top of* the fill layer.
--->
+Una característica útil de **tmap** es su capacidad para almacenar *objetos* que representan mapas.
+El siguiente fragmento de código lo demuestra guardando el último gráfico como un objeto de la clase `tmap` (nótese el uso de `tm_polygons()` que condensa `tm_fill() + tm_borders()` en una única función):
 
-<!--toDo: jn-->
-<!-- update when/if -->
-<!--
-```{block2 qtm, type = 'rmdnote'}
-`qtm()` is a handy function to create **q**uick **t**hematic **m**aps (hence the snappy name).
-It is concise and provides a good default visualization in many cases:
-`qtm(nz)`, for example, is equivalent to `tm_shape(nz) + tm_fill() + tm_borders()`.
-Further, layers can be added concisely using multiple `qtm()` calls, such as `qtm(nz) + qtm(nz_height)`.
-The disadvantage is that it makes aesthetics of individual layers harder to control, explaining why we avoid teaching it in this chapter.
-```
--->
-
-### Map objects {#map-obj}
-
-A useful feature of **tmap** is its ability to store *objects* representing maps.
-The code chunk below demonstrates this by saving the last plot in Figure \@ref(fig:tmshape) as an object of class `tmap` (note the use of `tm_polygons()` which condenses `tm_fill()  + tm_borders()` into a single function):
-
-```{r 08-mapping-4}
+```{r}
 map_nz = tm_shape(nz) + tm_polygons()
 class(map_nz)
 ```
 
-`map_nz` can be plotted later, for example by adding additional layers (as shown below) or simply running `map_nz` in the console, which is equivalent to `print(map_nz)`.
+El objeto `map_nz` puede graficarse posteriormente, por ejemplo añadiendo capas adicionales (como se muestra a continuación) o simplemente ejecutando `map_nz` en la consola, lo que equivale a `print(map_nz)`.
 
-New *shapes* can be added with `+ tm_shape(new_obj)`.
-In this case, `new_obj` represents a new spatial object to be plotted on top of preceding layers.
-When a new shape is added in this way, all subsequent aesthetic functions refer to it, until another new shape is added.
-This syntax allows the creation of maps with multiple shapes and layers, as illustrated in the next code chunk which uses the function `tm_raster()` to plot a raster layer (with `col_alpha` set to make the layer semi-transparent):
+Se pueden añadir nuevas *shape*s con `+ tm_shape(new_obj)`.
+En este caso, `nuevo_obj` representa un nuevo objeto espacial que se trazará sobre las capas precedentes.
+Cuando se añade una nueva forma de este modo, todas las funciones estéticas posteriores hacen referencia a ella, hasta que se añada otra nueva forma.
+Esta sintaxis permite la creación de mapas con múltiples formas y capas, como se ilustra en el siguiente fragmento de código que utiliza la función `tm_raster()` para trazar una capa raster (con `col_alpha` configurado para hacer la capa semitransparente):
 
-```{r 08-mapping-5, results='hide'}
+```{r, results='hide'}
 map_nz1 = map_nz +
   tm_shape(nz_elev) + tm_raster(col_alpha = 0.7)
 ```
 
-<!--toDo: jn-->
-<!-- explain the SpatRaster object downsampled to 1141 by 877 cells. message -->
-Building on the previously created `map_nz` object, the preceding code creates a new map object `map_nz1` that contains another shape (`nz_elev`) representing average elevation across New Zealand (see Figure \@ref(fig:tmlayers), left).
-More shapes and layers can be added, as illustrated in the code chunk below which creates `nz_water`, representing New Zealand's [territorial waters](https://en.wikipedia.org/wiki/Territorial_waters), and adds the resulting lines to an existing map object.
+A partir del objeto `map_nz` creado previamente, el código anterior crea un nuevo objeto cartográfico `map_nz1` que contiene otra forma (`nz_elev`) que representa la elevación media de Nueva Zelanda.
+Pueden añadirse más formas y capas, como se ilustra en el fragmento de código siguiente, que crea `nz_water`, que representa las aguas territoriales de Nueva Zelanda, y añade las líneas resultantes a un objeto cartográfico existente.
 
-```{r 08-mapping-6}
+```{r}
 nz_water = st_union(nz) |>
   st_buffer(22200) |> 
   st_cast(to = "LINESTRING")
@@ -184,50 +139,48 @@ map_nz2 = map_nz1 +
   tm_shape(nz_water) + tm_lines()
 ```
 
-There is no limit to the number of layers or shapes that can be added to `tmap` objects, and the same shape can even be used multiple times.
-The final map illustrated in Figure \@ref(fig:tmlayers) is created by adding a layer representing high points (stored in the object `nz_height`) onto the previously created `map_nz2` object with `tm_symbols()` (see `?tm_symbols` for details on **tmap**'s point plotting functions).
-The resulting map, which has four layers, is illustrated in the right-hand panel of Figure \@ref(fig:tmlayers):
+No hay límite en el número de capas o formas que pueden añadirse a los objetos `tmap`, e incluso puede utilizarse la misma forma varias veces.
+El mapa final se crea añadiendo una capa que representa los puntos altos (almacenados en el objeto `nz_height`) al objeto `map_nz2` creado previamente con `tm_symbols()` (véase `?tm_symbols` para más detalles sobre las funciones de trazado de puntos de **tmap**).
+El mapa resultante, que tiene cuatro capas, se ilustra en el panel derecho de la Figura \@ref(fig:tmlayers):
 
 ```{r 08-mapping-7}
 map_nz3 = map_nz2 +
   tm_shape(nz_height) + tm_symbols()
 ```
 
-A useful and little known feature of **tmap** is that multiple map objects can be arranged in a single 'metaplot' with `tmap_arrange()`.
-This is demonstrated in the code chunk below which plots `map_nz1` to `map_nz3`, resulting in Figure \@ref(fig:tmlayers).
+Una característica útil y poco conocida de **tmap** es que se pueden organizar varios objetos de mapa en un único "meta-plot" con `tmap_arrange()`.
+Esto se demuestra en el siguiente fragmento de código, que traza del `map_nz1` al `map_nz3`, dando como resultado la siguiente figura.
 
-```{r tmlayers, message=FALSE, fig.cap="Maps with additional layers added to the final map of Figure 9.1.", fig.scap="Additional layers added to the output of Figure 9.1."}
+```{r, message=FALSE, fig.cap="Maps with additional layers added to the final map of Figure 9.1.", fig.scap="Additional layers added to the output of Figure 9.1."}
+#| label: tmlayers
 tmap_arrange(map_nz1, map_nz2, map_nz3)
 ```
 
-More elements can also be added with the `+` operator.
-Aesthetic settings, however, are controlled by arguments to layer functions.
+También se pueden añadir más elementos con el operador `+`.
+Los ajustes estéticos, sin embargo, se controlan mediante argumentos a las funciones de capa.
 
-### Visual variables
+### Variables visuales
 
-\index{tmap (package)!aesthetics}
-\index{tmap (package)!visual variables}
-The plots in the previous section demonstrate **tmap**'s default aesthetic settings.
-Gray shades are used for `tm_fill()` and  `tm_symbols()` layers and a continuous black line is used to represent lines created with `tm_lines()`.
-Of course, these default values and other aesthetics can be overridden.
-The purpose of this section is to show how.
+Los gráficos de la sección anterior muestran la configuración estética por defecto de **tmap**.
+Se utilizan tonos grises para las capas `tm_fill()` y `tm_symbols()` y una línea negra continua para representar las líneas creadas con `tm_lines()`.
+Por supuesto, estos valores por defecto y otros estéticos pueden ser anulados.
+El propósito de esta sección es mostrar cómo.
 
-There are two main types of map aesthetics: those that change with the data and those that are constant.
-Unlike **ggplot2**, which uses the helper function `aes()` to represent variable aesthetics, **tmap** accepts a few aesthetic arguments, depending on a selected layer type:
+Hay dos tipos principales de estética de mapas: los que cambian con los datos y los que son constantes.
+A diferencia de **ggplot2**, que utiliza la función de ayuda `aes()` para representar estéticas variables, **tmap** acepta unos pocos argumentos estéticos, dependiendo del tipo de capa seleccionada:
 
-- `fill`: fill color of a polygon
-- `col`: color of a polygon border, line, point, or raster
-- `lwd`: line width
-- `lty`: line type
-- `size`: size of a symbol
-- `shape`: shape of a symbol
+- `fill`: color de relleno de un polígono
+- `col`: color del borde de un polígono, línea, punto o trama
+- `lwd`: ancho de línea
+- `lty`: tipo de línea
+- `size`: tamaño de un símbolo
+- `shape`: forma de un símbolo
 
-Additionally, we may customize the fill and border color transparency using `fill_alpha` and `col_alpha`.
+Además, podemos personalizar la transparencia de los colores de relleno y borde utilizando `fill_alpha` y `col_alpha`.
 
-To map a variable to an aesthetic, pass its column name to the corresponding argument, and to set a fixed aesthetic, pass the desired value instead.^[
-If there is a clash between a fixed value and a column name, the column name takes precedence. This can be verified by running the next code chunk after running `nz$red = 1:nrow(nz)`.
+Para asignar una variable a una estética, pase su nombre de columna al argumento correspondiente, y para establecer una estética fija, pase en su lugar el valor deseado.^[Si hay un conflicto entre un valor fijo y un nombre de columna, el nombre de columna tiene preferencia. Esto se puede comprobar ejecutando el siguiente trozo de código después de ejecutar `nz$red = 1:nrow(nz)`.
 ]
-The impact of setting these with fixed values is illustrated in Figure \@ref(fig:tmstatic).
+En la próxima figura se ilustra el impacto de establecer estos valores fijos.
 
 ```{r tmstatic, message=FALSE, fig.cap="The impact of changing commonly used fill and border aesthetics to fixed values.", fig.scap="The impact of changing commonly used aesthetics."}
 ma1 = tm_shape(nz) + tm_polygons(fill = "red")
@@ -240,48 +193,40 @@ ma6 = tm_shape(nz) + tm_polygons(fill = "red", fill_alpha = 0.3,
 tmap_arrange(ma1, ma2, ma3, ma4, ma5, ma6)
 ```
 
-Like base R plots, arguments defining aesthetics can also receive values that vary.
-Unlike the base R code below (which generates the left panel in Figure \@ref(fig:tmcol)), **tmap** aesthetic arguments will not accept a numeric vector:
+Al igual que los gráficos R base, los argumentos que definen la estética también pueden recibir valores que varían.
+A diferencia del código R base que se muestra a continuación, los argumentos estéticos **tmap** no aceptarán un vector numérico:
 
-```{r 08-mapping-9, eval=FALSE}
+```{r eval=FALSE}
 plot(st_geometry(nz), col = nz$Land_area)  # works
 tm_shape(nz) + tm_fill(col = nz$Land_area) # fails
 #> Error: palette should be a character value
 ```
 
-Instead `col` (and other aesthetics that can vary such as `lwd` for line layers and `size` for point layers) requires a character string naming an attribute associated with the geometry to be plotted.
-Thus, one would achieve the desired result as follows (plotted in the right-hand panel of Figure \@ref(fig:tmcol)):
+En su lugar, `col` (y otras estéticas que pueden variar, como `lwd` para capas de líneas y `size` para capas de puntos) requiere una cadena de caracteres que nombre un atributo asociado a la geometría que se va a trazar.
+Así, se obtendría el resultado deseado de la siguiente manera:
 
 ```{r 08-mapping-10, fig.show='hide', message=FALSE}
 tm_shape(nz) + tm_fill(fill = "Land_area")
 ```
 
-```{r tmcol, message=FALSE, fig.cap="Comparison of base (left) and tmap (right) handling of a numeric color field.", fig.scap="Comparison of base graphics and tmap", echo=FALSE, out.width="45%", fig.show='hold', warning=FALSE, message=FALSE, fig.height=5}
-plot(nz["Land_area"])
-tm_shape(nz) + tm_fill(fill = "Land_area")
-```
+Cada variable visual tiene tres argumentos adicionales relacionados, con sufijos `.scale`, `.legend` y `.free`.
+Por ejemplo, la función `tm_fill()` tiene argumentos como `fill`, `fill.scale`, `fill.legend` y `fill.free`.
+El argumento `.scale` determina cómo se representan los valores proporcionados en el mapa y en la leyenda, mientras que el argumento `.legend` se utiliza para personalizar la configuración de la leyenda, como su título, orientación o posición.
+El argumento `.free` es relevante sólo para mapas con muchas facetas para determinar si cada faceta tiene la misma o diferente escala y leyenda.
 
-Each visual variable has three related additional arguments, with suffixes of `.scale`, `.legend`, and `.free`.
-For example, the `tm_fill()` function has arguments such as `fill`, `fill.scale`, `fill.legend`, and `fill.free`.
-The `.scale` argument determines how the provided values are represented on the map and in the legend (Section \@ref(scales)), while the `.legend` argument is used to customize the legend settings, such as its title, orientation, or position (Section \@ref(legends)).
-The `.free` argument is relevant only for maps with many facets to determine if each facet has the same or different scale and legend (Section \@ref(faceted-maps)).
+### Escalas
 
-### Scales
+Las escalas controlan cómo se representan los valores en el mapa y en la leyenda, y dependen en gran medida de la variable visual seleccionada. 
+Por ejemplo, cuando nuestra variable visual es `col`, entonces `col.scale` controla cómo los colores de los objetos espaciales están relacionados con los valores proporcionados; y cuando nuestra variable visual es `size`, entonces `size.scale` controla cómo los tamaños representan los valores proporcionados.
+Por defecto, la escala utilizada es `tm_scale()`, que selecciona la configuración visual dada automáticamente por el tipo de datos (factor, numérico y entero).
 
-\index{tmap (package)!scales}
-Scales control how the values are represented on the map and in the legend, and largely depend on the selected visual variable. 
-For example, when our visual variable is `col`, then `col.scale` controls how the colors of spatial objects are related to the provided values; and when our visual variable is `size`, then `size.scale` controls how the sizes represent the provided values.
-By default, the used scale is `tm_scale()`, which selects the visual settings automatically given by the data type (factor, numeric, and integer).
+Veamos cómo funcionan las escalas personalizando los colores de relleno de los polígonos.
+La configuración del color es una parte importante del diseño de mapas, ya que puede influir mucho en la representación de la variabilidad espacial, como se ilustra en la figura de abajo.Esta figura muestra cuatro formas de colorear las regiones de Nueva Zelanda en función de la renta media, de izquierda a derecha (y se muestra en el fragmento de código siguiente):
 
-\index{tmap (package)!color breaks}
-Let's see how the scales work by customizing polygons' fill colors.
-Color settings are an important part of map design -- they can have a major impact on how spatial variability is portrayed as illustrated in Figure \@ref(fig:tmpal).
-This figure shows four ways of coloring regions in New Zealand depending on median income, from left to right (and demonstrated in the code chunk below):
-
-- The default setting uses 'pretty' breaks, described in the next paragraph
-- `breaks` allows you to manually set the breaks
-- `n` sets the number of bins into which numeric variables are categorized
-- `values` defines the color scheme, for example, `BuGn`
+- La configuración por defecto utiliza saltos "bonitos", que se describen en el párrafo siguiente
+- `breaks` permite establecer manualmente los saltos
+- `n` establece el número de intervalos en los que se clasifican las variables numéricas
+- `values` define el esquema de colores, por ejemplo, `BuGn`.
 
 ```{r 08-mapping-12, eval=FALSE}
 tm_shape(nz) + tm_polygons(fill = "Median_income")
@@ -297,14 +242,13 @@ tm_shape(nz) + tm_polygons(fill = "Median_income",
 source("https://github.com/geocompx/geocompr/raw/main/code/09-tmpal.R", print.eval = TRUE)
 ```
 
-```{block2 break-style-note0, type='rmdnote'}
-All of the above arguments (`breaks`, `n`, and `values`) also work for other types of visual variables.
-For example, `values` expects a vector of colors or a palette name for `fill.scale` or `col.scale`, a vector of sizes for `size.scale`, or a vector of symbols for `shape.scale`.
-```
+:::{.callout-note}
+Todos los argumentos anteriores (`breaks`, `n` y `values`) también funcionan para otros tipos de variables visuales.
+Por ejemplo, `values` espera un vector de colores o un nombre de paleta para `fill.scale` o `col.scale`, un vector de tamaños para `size.scale`, o un vector de símbolos para `shape.scale`.
+:::
 
-\index{tmap (package)!break styles}
-We are also able to customize scales using a family of functions that start with the `tm_scale_` prefix.
-The most important ones are `tm_scale_intervals()`, `tm_scale_continuous()`, and `tm_scale_categorical()`.
+También podemos personalizar las escalas utilizando una familia de funciones que empiezan con el prefijo `tm_scale_`.
+Las más importantes son `tm_scale_intervals()`, `tm_scale_continuous()`, y `tm_scale_categorical()`.
 
 ```{r}
 #| eval: false
@@ -321,30 +265,27 @@ tm_shape(nz) + tm_fill(fill = "Land_area", fill.scale = tm_scale_continuous())
 tm_shape(nz) + tm_symbols(size = "Land_area", size.scale = tm_scale_intervals())
 ```
 
-\index{tmap (package)!interval scale}
-The `tm_scale_intervals()` function splits the input data values into a set of intervals.
-In addition to manually setting `breaks`, **tmap** allows users to specify algorithms to create breaks with the `style` argument automatically.
-Here are some of the most useful scale functions (Figure \@ref(fig:break-styles)):
+La función `tm_scale_intervals()` divide los valores de los datos de entrada en un conjunto de intervalos.
+Además de establecer manualmente los `breaks`, **tmap** permite a los usuarios especificar algoritmos para crear automáticamente los `breaks` con el argumento `style`.
+Éstas son algunas de las funciones de escala más útiles:
 
-- `style = "pretty"`: the default setting, rounds breaks into whole numbers where possible and spaces them evenly
-- `style = "equal"`: divides input values into bins of equal range and is appropriate for variables with a uniform distribution (not recommended for variables with a skewed distribution as the resulting map may end-up having little color diversity)
-- `style = "quantile"`: ensures the same number of observations fall into each category (with the potential downside that bin ranges can vary widely)
-- `style = "jenks"`: identifies groups of similar values in the data and maximizes the differences between categories
-- `style = "log10_pretty"`: a common logarithmic (the logarithm to base 10) version of the regular pretty style used for variables with a right-skewed distribution
+- `style = "pretty"`: la configuración por defecto, redondea los saltos a números enteros cuando es posible y los espacia uniformemente
+- `style = "equal"`: divide los valores de entrada en intervalos de igual rango y es apropiado para variables con una distribución uniforme (no se recomienda para variables con una distribución sesgada, ya que el mapa resultante puede acabar teniendo poca diversidad de colores)
+- `style = "quantile"`: garantiza que el mismo número de observaciones pertenezcan a cada categoría (con la desventaja potencial de que los intervalos de los intervalos pueden variar mucho)
+- `style = "jenks"`: identifica grupos de valores similares en los datos y maximiza las diferencias entre categorías
+- `style = "log10_pretty"`: una versión logarítmica común (el logaritmo en base 10) del estilo regular pretty utilizado para variables con una distribución sesgada a la derecha
 
-```{block2 break-style-note, type='rmdnote'}
-Although `style` is an argument of **tmap** functions, in fact it originates as an argument in `classInt::classIntervals()` --- see the help page of this function for details.
-```
+:::{.callout-note}
+Aunque `style` es un argumento de las funciones **tmap**, en realidad se origina como argumento en `classInt::classIntervals()` --- véase la página de ayuda de esta función para más detalles.
+:::
 
 ```{r break-styles, message=FALSE, fig.cap="Illustration of different interval scales' methods set using the style argument in tmap.", fig.scap="Illustration of different binning methods using tmap.", echo=FALSE, warning=FALSE, fig.height=5}
 source("https://github.com/geocompx/geocompr/raw/main/code/09-break-styles.R", print.eval = TRUE)
 ```
 
-\index{tmap (package)!continuous scale}
-The `tm_scale_continuous()` function present a large number of colors over continuous color fields and are particularly suited for continuous rasters.
-In case of variables with skewed distribution you can also use its variants -- `tm_scale_continuous_log()` and `tm_scale_continuous_log1p()`.
-\index{tmap (package)!categorical scale}
-Finally, `tm_scale_categorical()` was designed to represent categorical values and assures that each category receives a unique color (Figure \@ref(fig:concat)).
+La función `tm_scale_continuous()` presenta un gran número de colores sobre campos de color continuos y es particularmente adecuada para rásters continuos.
+En el caso de variables con distribución sesgada, también puede utilizar sus variantes: `tm_scale_continuous_log()` y `tm_scale_continuous_log1p()`.
+Por último, `tm_scale_categorical()` se diseñó para representar valores categóricos y garantiza que cada categoría reciba un color único.
 
 ```{r concat, message=FALSE, fig.cap="Illustration of continuous and categorical scales in tmap.", echo=FALSE}
 library(tmap)
@@ -361,32 +302,26 @@ m_cat1 = tm_shape(nz) +
 tmap_arrange(m_cont1, m_cat1)
 ```
 
-\index{tmap (package)!palettes}
-Palettes define the color ranges associated with the bins and determined by the `tm_scale_*()` functions, and its `breaks` and `n` arguments described above.
-The default color palette is specified in `tm_layout()` (see Section \@ref(layouts) to learn more); however, it could be quickly changed using the `values` argument.
-It expects a vector of colors or a new color palette name, which can be find interactively with `cols4all::c4a_gui()`.
-You can also add a `-` as the color palette name prefix to reverse the palette order.
+Las paletas definen los rangos de color asociados a los bins y determinados por las funciones `tm_scale_*()`, y sus argumentos `breaks` y `n` descritos anteriormente.
+La paleta de colores por defecto se especifica en `tm_layout()`; sin embargo, puede cambiarse rápidamente usando el argumento `values`.
+Espera un vector de colores o un nuevo nombre de paleta de colores, que puede encontrarse interactivamente con `cols4all::c4a_gui()`.
+También puede añadir un `-` como prefijo del nombre de la paleta de colores para invertir el orden de la paleta.
 
-```{block2 visual-vars-values, type='rmdnote'}
-All of the default `values` of the visual variables, such as default color palettes for different types of input variables, can be found with `tmap_options()$values.var`.
-```
+:::{.callout-note}
+Todos los `valores` por defecto de las variables visuales, como las paletas de colores por defecto para los diferentes tipos de variables de entrada, se pueden encontrar con `tmap_options()$values.var`.
+:::
 
-There are three main groups of color palettes\index{map making!color palettes}: categorical, sequential and diverging (Figure \@ref(fig:colpal)), and each of them serves a different purpose.^[
-A fourth group of color palettes, called bivariate, also exists.
-They are used when we want to represent relations between two variables on one map.
+Hay tres grupos principales de paletas de colores: categórica, secuencial y divergente, y cada uno de ellos sirve para un propósito diferente.
+También existe un cuarto grupo de paletas de colores, denominadas bivariadas.
+Se utilizan cuando queremos representar relaciones entre dos variables en un mapa.
 ]
-Categorical palettes consist of easily distinguishable colors and are most appropriate for categorical data without any particular order such as state names or land cover classes.
-Colors should be intuitive: rivers should be blue, for example, and pastures green.
-Avoid too many categories: maps with large legends and many colors can be uninterpretable.
-<!--^[
-toDo:jn
-tmap4??
-`fill = "MAP_COLORS"` can be used in maps with a large number of individual polygons (for example, a map of individual countries) to create unique fill colors for adjacent polygons.]
--->
+Las paletas categóricas constan de colores fácilmente distinguibles y son las más apropiadas para datos categóricos sin ningún orden concreto, como nombres de estados o clases de cobertura del suelo.
+Los colores deben ser intuitivos: los ríos deben ser azules, por ejemplo, y los pastos verdes.
+Evite demasiadas categorías: los mapas con grandes leyendas y muchos colores pueden resultar ininteligibles.
 
-The second group is sequential palettes.
-These follow a gradient, for example from light to dark colors (light colors often tend to represent lower values), and are appropriate for continuous (numeric) variables.
-Sequential palettes can be single (`greens` goes from light to dark blue, for example) or multi-color/hue (`yl_gn_bu` is gradient from light yellow to blue via green, for example), as demonstrated in the code chunk below --- output not shown, run the code yourself to see the results!
+El segundo grupo son las paletas secuenciales.
+Siguen un gradiente, por ejemplo de colores claros a oscuros (los colores claros suelen representar valores más bajos), y son apropiadas para variables continuas (numéricas).
+Las paletas secuenciales pueden ser simples (`greens` va del azul claro al azul oscuro, por ejemplo) o multicolor/tono (`yl_gn_bu` es un gradiente del amarillo claro al azul pasando por el verde, por ejemplo), como se muestra en el fragmento de código siguiente --- no se muestra la salida, ¡ejecute el código usted mismo para ver los resultados!
 
 ```{r 08-mapping-13, eval=FALSE}
 tm_shape(nz) + 
@@ -395,9 +330,9 @@ tm_shape(nz) +
   tm_polygons("Median_income", fill.scale = tm_scale(values = "yl_gn_bu"))
 ```
 
-The third group, diverging palettes, typically range between three distinct colors (purple-white-green in Figure \@ref(fig:colpal)) and are usually created by joining two single-color sequential palettes with the darker colors at each end.
-Their main purpose is to visualize the difference from an important reference point, e.g., a certain temperature, the median household income or the mean probability for a drought event.
-The reference point's value can be adjusted in **tmap** using the `midpoint` argument.
+El tercer grupo, las paletas divergentes, suelen oscilar entre tres colores distintos (morado-blanco-verde en la figura \@ref(fig:colpal)) y suelen crearse uniendo dos paletas secuenciales de un solo color con los colores más oscuros en cada extremo.
+Su principal objetivo es visualizar la diferencia con respecto a un punto de referencia importante, por ejemplo, una temperatura determinada, la mediana de los ingresos familiares o la probabilidad media de que se produzca una sequía.
+El valor del punto de referencia puede ajustarse en **tmap** utilizando el argumento `midpoint`.
 
 ```{r 08-mapping-13b, eval=FALSE}
 tm_shape(nz) + 
@@ -427,27 +362,22 @@ many_palette_plotter(c(all_default_pals$div, all_default_pals$seq, all_default_p
                      titles = c("Diverging", "Sequential", "Categorical"))
 ```
 
-There are two important principles for consideration when working with colors: perceptibility and accessibility.
-Firstly, colors on maps should match our perception. 
-This means that certain colors are viewed through our experience and also cultural lenses.
-For example, green colors usually represent vegetation or lowlands and blue is connected with water or cool.
-Color palettes should also be easy to understand to effectively convey information.
-It should be clear which values are lower and which are higher, and colors should change gradually.
-<!--toDo:jn-->
-<!-- update and improve -->
-<!-- This property is not preserved in the rainbow color palette; therefore, we suggest avoiding it in geographic data visualization [@borland_rainbow_2007]. -->
-<!-- Instead, [the viridis color palettes](https://cran.r-project.org/web/packages/viridis/), also available in **tmap**, can be used. -->
-Secondly, changes in colors should be accessible to the largest number of people.
-Therefore, it is important to use colorblind friendly palettes as often as possible.^[See the "Color vision" options and the "Color Blind Friendliness" panel in `cols4all::c4a_gui()`.]
+Hay dos principios importantes a tener en cuenta cuando se trabaja con colores: perceptibilidad y accesibilidad.
+En primer lugar, los colores de los mapas deben coincidir con nuestra percepción. 
+Esto significa que ciertos colores se ven a través de nuestra experiencia y también de lentes culturales.
+Por ejemplo, los colores verdes suelen representar vegetación o tierras bajas y el azul se relaciona con el agua o lo frío.
+Las paletas de colores también deben ser fáciles de entender para transmitir la información con eficacia.
+Debe quedar claro qué valores son más bajos y cuáles más altos, y los colores deben cambiar gradualmente.
+En segundo lugar, los cambios de color deben ser accesibles al mayor número de personas.
+Por lo tanto, es importante utilizar paletas aptas para daltónicos siempre que sea posible.^[Véanse las opciones "Visión del color" y el panel "Apto para daltónicos" en `cols4all::c4a_gui()`.]
 
-### Legends
+### Leyendas
 
-\index{tmap (package)!legends}
-After we decided on our visual variable and its properties, we should move our attention toward the related map legend style.
-Using the `tm_legend()` function, we may change its title, position, orientation, or even disable it.
-The most important argument in this function is `title`, which sets the title of the associated legend.
-In general, a map legend title should provide two pieces of information: what the legend represents and what are the units of the presented variable.
-The following code chunk demonstrates this functionality by providing a more attractive name than the variable name `Land_area` (note the use of `expression()` to create superscript text):
+Una vez decidida nuestra variable visual y sus propiedades, debemos centrar nuestra atención en el estilo de la leyenda del mapa.
+Usando la función `tm_legend()`, podemos cambiar su título, posición, orientación, o incluso desactivarla.
+El argumento más importante de esta función es `title`, que establece el título de la leyenda asociada.
+En general, el título de una leyenda de mapa debe proporcionar dos informaciones: qué representa la leyenda y cuáles son las unidades de la variable presentada.
+El siguiente fragmento de código demuestra esta funcionalidad proporcionando un nombre más atractivo que el nombre de la variable `Área_terrestre` (nótese el uso de `expression()` para crear texto en superíndice):
 
 ```{r 08-mapping-11}
 legend_title = expression("Area (km"^2*")")
@@ -455,8 +385,8 @@ map_nza = tm_shape(nz) +
   tm_polygons(fill = "Land_area", fill.legend = tm_legend(title = legend_title))
 ```
 
-The default legend orientation in **tmap** is `"portrait"`, however, an alternative legend orientation, `"landscape"`, is also possible.
-Other than that, we can also customize the location of the legend using the `position` argument.
+La orientación por defecto de la leyenda en **tmap** es `"vertical"`, sin embargo, también es posible una orientación alternativa de la leyenda, `"horizontal"`.
+Aparte de eso, también podemos personalizar la ubicación de la leyenda utilizando el argumento `position`.
 
 ```{r}
 map_nza2 = tm_shape(nz) +
@@ -466,24 +396,23 @@ map_nza2 = tm_shape(nz) +
                                       position = tm_pos_out("center", "bottom")))
 ```
 
-The legend position (and also the position of several other map elements in **tmap**) can be customized using one of a few functions.
-The two most important are:
+La posición de la leyenda (y también la posición de otros elementos del mapa en **tmap**) puede personalizarse utilizando una de las siguientes funciones.
+Las dos más importantes son
 
-- `tm_pos_out()`: the default, adds the legend outside of the map frame area.
-We can customize its location with two values that represent the horizontal position (`"left"`, `"center"`, or `"right"`), and the vertical position (`"bottom"`, `"center"`, or `"top"`)
-- `tm_pos_in()`: puts the legend inside of the map frame area. 
-We may decided on its position using two arguments, where the first one can be `"left"`, `"center"`, or `"right"`, and the second one can be  `"bottom"`, `"center"`, or `"top"`.
+- `tm_pos_out()`: por defecto, añade la leyenda fuera del área del marco del mapa.
+Podemos personalizar su ubicación con dos valores que representan la posición horizontal (`"left"`, `"center"`, o `"right"`), y la posición vertical (`"bottom"`, `"center"`, o `"top"`)
+- `tm_pos_in()`: coloca la leyenda dentro del área del marco del mapa. 
+Podemos decidir su posición usando dos argumentos, donde el primero puede ser `"left"`, `"center"` o `"right"`, y el segundo puede ser `"bottom"`, `"center"`, o `"top"`.
 
-Alternatively, we may just provide a vector of two values (or two numbers between 0 and 1) here -- and in such case, the legend will be put inside the map frame.
+Alternativamente, podemos simplemente proporcionar un vector de dos valores (o dos números entre 0 y 1) aquí -- y en tal caso, la leyenda se pondrá dentro del marco del mapa.
 
-### Layouts
+### Disposición
 
-\index{tmap (package)!layouts}
-The map layout refers to the combination of all map elements into a cohesive map.
-Map elements include among others the objects to be mapped, the title, the scale bar, the map grid, and margins, while the color settings covered in the previous section relate to the palette and break-points used to affect how the map looks.
-Both may result in subtle changes that can have an equally large impact on the impression left by your maps.
+El diseño del mapa se refiere a la combinación de todos los elementos del mapa en un mapa cohesivo.
+Los elementos del mapa incluyen, entre otros, los objetos a cartografiar, el título, la barra de escala, la rejilla del mapa y los márgenes, mientras que los ajustes de color tratados en la sección anterior se refieren a la paleta y a los puntos de ruptura utilizados para afectar al aspecto del mapa.
+Ambos pueden dar lugar a cambios sutiles que pueden tener un impacto igualmente grande en la impresión que dejan sus mapas.
 
-Additional map elements such as graticules \index{tmap (package)!graticules}, north arrows\index{tmap (package)!north arrows}, scale bars\index{tmap (package)!scale bars} and map titles have their own functions: `tm_graticules()`, `tm_compass()`, `tm_scalebar()`, and `tm_title()` (Figure \@ref(fig:na-sb)).^[Another additional map elements include `tm_grid()`, `tm_logo()` and `tm_credits()`.]
+Los elementos adicionales del mapa, como las retículas, las flechas del norte, las barras de escala y los títulos del mapa, tienen sus propias funciones: `tm_graticules()`, `tm_compass()`, `tm_scalebar()` y `tm_title()`.^[Otros elementos adicionales del mapa son `tm_grid()`, `tm_logo()` y `tm_credits()`.]
 
 ```{r na-sb, message=FALSE, fig.cap="Map with additional elements - a north arrow and scale bar.", out.width="65%", fig.asp=1, fig.scap="Map with a north arrow and scale bar."}
 map_nz + 
@@ -493,7 +422,7 @@ map_nz +
   tm_title("New Zealand")
 ```
 
-**tmap** also allows a wide variety of layout settings to be changed, some of which, produced using the following code (see `args(tm_layout)` or `?tm_layout` for a full list), are illustrated in Figure \@ref(fig:layout1):
+**tmap** también permite cambiar una amplia variedad de configuraciones de diseño, algunas de las cuales, producidas usando el siguiente código (ver `args(tm_layout)` o `?tm_layout` para una lista completa), se ilustran en la próxima figura:
 
 ```{r 08-mapping-14, eval=FALSE}
 map_nz + tm_layout(scale = 4)
@@ -505,33 +434,31 @@ map_nz + tm_layout(frame = FALSE)
 source("https://github.com/geocompx/geocompr/raw/main/code/09-layout1.R", print.eval = TRUE)
 ```
 
-The other arguments in `tm_layout()` provide control over many more aspects of the map in relation to the canvas on which it is placed.
-Here are some useful layout settings (some of which are illustrated in Figure \@ref(fig:layout2)):
+Los demás argumentos de `tm_layout()` permiten controlar muchos más aspectos del mapa en relación con el lienzo sobre el que se coloca.
+A continuación se indican algunos ajustes de diseño útiles:
 
-- Margin settings including `outer.margin` and `inner.margin`
-- Font settings controlled by `fontface` and `fontfamily`
-- Legend settings including options such as `legend.show` (whether or not to show the legend) `legend.orientation`, `legend.position`, and `legend.frame`
-- Frame width (`frame.lwd`) and an option to allow double lines (`frame.double.line`)
-- Color settings controlling `color.sepia.intensity` (how *yellowy* the map looks) and `color.saturation` (a color-grayscale)
+- Ajustes de márgenes, incluidos `outer.margin` e `inner.margin`.
+- Ajustes de fuente controlados por "fontface" y "fontfamily".
+- Configuración de la leyenda, incluyendo opciones como `legend.show` (mostrar o no la leyenda) `legend.orientation`, `legend.position`, y `legend.frame`.
+- Anchura del marco (`frame.lwd`) y una opción para permitir líneas dobles (`frame.double.line`)
+- Ajustes de color que controlan "color.sepia.intensity" (el aspecto amarillento del mapa) y "color.saturation" (una escala de grises).
 
 ```{r layout2, message=FALSE, fig.cap="Illustration of selected layout options.", echo=FALSE, fig.asp=0.56, warning=FALSE}
 # todo: add more useful settings to this plot
 source("https://github.com/geocompx/geocompr/raw/main/code/09-layout2.R", print.eval = TRUE)
 ```
 
-### Faceted maps
+### Mapas facetados
 
-\index{map making!faceted maps}
-\index{tmap (package)!faceted maps}
-Faceted maps, also referred to as 'small multiples', are composed of many maps arranged side-by-side, and sometimes stacked vertically [@meulemans_small_2017].
-Facets enable the visualization of how spatial relationships change with respect to another variable, such as time.
-The changing populations of settlements, for example, can be represented in a faceted map with each panel representing the population at a particular moment in time.
-The time dimension could be represented via another *visual variable* such as color.
-However, this risks cluttering the map because it will involve multiple overlapping points (cities do not tend to move over time!).
+Los mapas facetados, también denominados "pequeños múltiplos", se componen de muchos mapas dispuestos uno al lado del otro, y a veces apilados verticalmente.
+Las facetas permiten visualizar cómo cambian las relaciones espaciales con respecto a otra variable, como el tiempo.
+Las poblaciones cambiantes de los asentamientos, por ejemplo, pueden representarse en un mapa facetado en el que cada panel representa la población en un momento determinado.
+La dimensión temporal podría representarse mediante otra *variable visual*, como el color.
+Sin embargo, se corre el riesgo de saturar el mapa, ya que se superpondrían múltiples puntos (¡las ciudades no suelen moverse con el tiempo!).
 
-Typically all individual facets in a faceted map contain the same geometry data repeated multiple times, once for each column in the attribute data (this is the default plotting method for `sf` objects, see Chapter \@ref(spatial-class)).
-However, facets can also represent shifting geometries such as the evolution of a point pattern over time.
-This use case of faceted plot is illustrated in Figure \@ref(fig:urban-facet).
+Normalmente, todas las facetas individuales de un mapa facetado contienen los mismos datos geométricos repetidos varias veces, una por cada columna de los datos de atributos (éste es el método de trazado por defecto para los objetos `sf`).
+Sin embargo, las facetas también pueden representar geometrías cambiantes, como la evolución de un patrón de puntos a lo largo del tiempo.
+Este caso de uso del trazado facetado se ilustra a continuación.
 
 ```{r urban-facet, message=FALSE, fig.cap="Faceted map showing the top 30 largest urban agglomerations from 1970 to 2030 based on population projections by the United Nations.", fig.scap="Faceted map showing urban agglomerations.", fig.asp=0.5}
 urb_1970_2030 = urban_agglomerations |> 
@@ -544,27 +471,25 @@ tm_shape(world) +
   tm_facets_wrap(by = "year", nrow = 2)
 ```
 
-The preceding code chunk demonstrates key features of faceted maps created using the `tm_facets_wrap()` function:
+El fragmento de código anterior muestra las principales características de los mapas facetados creados con la función `tm_facets_wrap()`:
 
-- Shapes that do not have a facet variable are repeated (the countries in `world` in this case)
-- The `by` argument which varies depending on a variable (`"year"` in this case)
-- The `nrow`/`ncol` setting specifying the number of rows and columns that facets should be arranged into
+- Las formas que no tienen una variable de faceta se repiten (los países en `world` en este caso)
+- El argumento `by` que varía en función de una variable (`"year"` en este caso)
+- El parámetro `nrow`/`ncol` que especifica el número de filas y columnas en que deben organizarse las facetas
 
-Alternatively, it is possible to use the `tm_facets_grid()` function that allows to have facets based on up to three different variables: one for `rows`, one for `columns`, and possibly one for `pages`.
+Alternativamente, es posible usar la función `tm_facets_grid()` que permite tener facetas basadas en hasta tres variables diferentes: una para `rows`, una para `columns`, y posiblemente una para `pages`.
 
-In addition to their utility for showing changing spatial relationships, faceted maps are also useful as the foundation for animated maps (see Section \@ref(animated-maps)).
+Además de su utilidad para mostrar relaciones espaciales cambiantes, los mapas facetados también son útiles como base para mapas animados.
 
 ### Inset maps
 
-\index{map making!inset maps}
-\index{tmap (package)!inset maps}
-An inset map is a smaller map rendered within or next to the main map. 
-It could serve many different purposes, including providing a context (Figure \@ref(fig:insetmap1)) or bringing some non-contiguous regions closer to ease their comparison (Figure \@ref(fig:insetmap2)).
-They could be also used to focus on a smaller area in more detail or to cover the same area as the map, but representing a different topic.
+Un mapa de inserción o *inset map* es un mapa más pequeño que se representa dentro del mapa principal o junto a él. 
+Puede servir para muchos fines distintos, como proporcionar un contexto o acercar algunas regiones no contiguas para facilitar su comparación.
+También pueden utilizarse para centrarse en una zona más pequeña con más detalle o para cubrir la misma zona que el mapa, pero representando un tema diferente.
 
-In the example below, we create a map of the central part of New Zealand's Southern Alps.
-Our inset map will show where the main map is in relation to the whole New Zealand.
-The first step is to define the area of interest, which can be done by creating a new spatial object, `nz_region`.
+En el siguiente ejemplo, creamos un mapa de la parte central de los Alpes del Sur de Nueva Zelanda.
+Nuestro mapa de inserción mostrará dónde se encuentra el mapa principal en relación con toda Nueva Zelanda.
+El primer paso es definir el área de interés, lo que puede hacerse creando un nuevo objeto espacial, `nz_region`.
 
 ```{r 08-mapping-16}
 nz_region = st_bbox(c(xmin = 1340000, xmax = 1450000,
@@ -573,8 +498,8 @@ nz_region = st_bbox(c(xmin = 1340000, xmax = 1450000,
   st_as_sfc()
 ```
 
-In the second step, we create a base map showing the New Zealand's Southern Alps area. 
-This is a place where the most important message is stated. 
+En el segundo paso, creamos un mapa base que muestra la zona de los Alpes del Sur de Nueva Zelanda. 
+En él se expone el mensaje más importante. 
 
 ```{r 08-mapping-17}
 nz_height_map = tm_shape(nz_elev, bbox = nz_region) +
@@ -584,9 +509,9 @@ nz_height_map = tm_shape(nz_elev, bbox = nz_region) +
   tm_scalebar(position = c("left", "bottom"))
 ```
 
-The third step consists of the inset map creation. 
-It gives a context and helps to locate the area of interest. 
-Importantly, this map needs to clearly indicate the location of the main map, for example by stating its borders.
+El tercer paso consiste en la creación del mapa de inserción. 
+Aporta un contexto y ayuda a localizar la zona de interés. 
+Es importante que este mapa indique claramente la ubicación del mapa principal, por ejemplo, indicando sus límites.
 
 ```{r 08-mapping-18}
 nz_map = tm_shape(nz) + tm_polygons() +
@@ -595,9 +520,9 @@ nz_map = tm_shape(nz) + tm_polygons() +
   tm_layout(bg.color = "lightblue")
 ```
 
-One of the main differences between regular charts (e.g., scatterplots) and maps is that the input data determine the aspect ratio of maps.
-Thus, in this case, we need to calculate the aspect ratios of our two main datasets, `nz_region` and `nz`.
-The following function, `norm_dim()` returns the normalized width (`"w"`) and height (`"h"`) of the object (as `"snpc"` units understood my the graphic device).
+Una de las principales diferencias entre los gráficos normales (por ejemplo, los de dispersión) y los mapas es que los datos de entrada determinan la relación de aspecto de los mapas.
+Así, en este caso, tenemos que calcular las relaciones de aspecto de nuestros dos conjuntos de datos principales, `nz_region` y `nz`.
+La siguiente función, `norm_dim()` devuelve la anchura (`"w"`) y la altura (`"h"`) normalizadas del objeto (en unidades `"snpc"` entendidas en mi dispositivo gráfico).
 
 ```{r, message=FALSE}
 library(grid)
@@ -613,16 +538,16 @@ main_dim = norm_dim(nz_region)
 ins_dim = norm_dim(nz)
 ```
 
-Next, knowing the aspect ratios, we need to specify the sizes and locations of our two maps -- the main map and the inset map -- using the `viewport()` function.
-A viewport is part of a graphics device we use to draw the graphical elements at a given moment.
-The viewport of our main map is just the representation of its aspect ratio.
+A continuación, sabiendo las relaciones de aspecto, tenemos que especificar los tamaños y ubicaciones de nuestros dos mapas - el mapa principal y el mapa de inserción - utilizando la función `viewport()`.
+Una ventana gráfica es parte de un dispositivo gráfico que utilizamos para dibujar los elementos gráficos en un momento dado.
+La ventana gráfica de nuestro mapa principal no es más que la representación de su relación de aspecto.
 
 ```{r}
 main_vp = viewport(width = main_dim[1], height = main_dim[2])
 ```
 
-On the other hand, the viewport of the inset map needs to specify its size and location.
-Here, we would make the inset map twice smaller as the main one by multiplying the width and height by 0.5, and we will locate it 0.5 cm from the bottom right of the main map frame.
+Por otro lado, la ventana gráfica del mapa de inserción necesita especificar su tamaño y ubicación.
+En este caso, haremos el mapa de inserción dos veces más pequeño que el principal multiplicando la anchura y la altura por 0,5, y lo situaremos a 0,5 cm de la parte inferior derecha del marco del mapa principal.
 
 ```{r}
 ins_vp = viewport(width = ins_dim[1] * 0.5, height = ins_dim[2] * 0.5,
@@ -630,7 +555,7 @@ ins_vp = viewport(width = ins_dim[1] * 0.5, height = ins_dim[2] * 0.5,
                   just = c("right", "bottom"))
 ```
 
-Finally, we combine the two maps by creating a new, blank canvas, printing out the main map, and then placing the inset map inside of the main map viewport.
+Por último, combinamos los dos mapas creando un nuevo lienzo en blanco, imprimiendo el mapa principal y colocando el mapa insertado dentro de la ventana del mapa principal.
 
 ```{r insetmap1, message=FALSE, fig.cap="Inset map providing a context - location of the central part of the Southern Alps in New Zealand.", fig.scap="Inset map providing a context."}
 grid.newpage()
@@ -639,19 +564,19 @@ pushViewport(main_vp)
 print(nz_map, vp = ins_vp)
 ```
 
-Inset map can be saved to file either by using a graphic device (see Section \@ref(visual-outputs)) or the `tmap_save()` function and its arguments - `insets_tm` and `insets_vp`.
+El mapa de inserción puede guardarse en un archivo utilizando un dispositivo gráfico o la función `tmap_save()` y sus argumentos - `insets_tm` y `insets_vp`.
 
-Inset maps are also used to create one map of non-contiguous areas.
-Probably, the most often used example is a map of the United States, which consists of the contiguous United States, Hawaii and Alaska.
-It is very important to find the best projection for each individual inset in these types of cases (see Chapter \@ref(reproj-geo-data) to learn more).
-We can use US National Atlas Equal Area for the map of the contiguous United States by putting its EPSG code in the `projection` argument of `tm_shape()`.
+Los mapas de inserción también se utilizan para crear un mapa de zonas no contiguas.
+Probablemente, el ejemplo más utilizado sea un mapa de Estados Unidos, que consta de los Estados Unidos contiguos, Hawai y Alaska.
+Es muy importante encontrar la mejor proyección para cada inserto individual en este tipo de casos.
+Podemos utilizar US National Atlas Equal Area para el mapa de los Estados Unidos contiguos poniendo su código EPSG en el argumento `projection` de `tm_shape()`.
 
 ```{r 08-mapping-19}
-us_states_map = tm_shape(us_states, projection = "EPSG:2163") + tm_polygons() + 
+us_states_map = tm_shape(us_states, crs = "EPSG:2163") + tm_polygons() + 
   tm_layout(frame = FALSE)
 ```
 
-The rest of our objects, `hawaii` and `alaska`, already have proper projections; therefore, we just need to create two separate maps:
+El resto de nuestros objetos, `hawaii` y `alaska`, ya tienen proyecciones adecuadas; por tanto, sólo tenemos que crear dos mapas distintos:
 
 ```{r 08-mapping-20}
 hawaii_map = tm_shape(hawaii) +
@@ -665,7 +590,7 @@ alaska_map = tm_shape(alaska) +
   tm_layout(frame = FALSE, bg.color = NA)
 ```
 
-The final map is created by combining and arranging these three maps:
+El mapa final se crea combinando y ordenando estos tres mapas:
 
 ```{r insetmap2, message=FALSE, fig.cap="Map of the United States.", warning=FALSE}
 us_states_map
@@ -673,45 +598,33 @@ print(hawaii_map, vp = grid::viewport(0.35, 0.1, width = 0.2, height = 0.1))
 print(alaska_map, vp = grid::viewport(0.15, 0.15, width = 0.3, height = 0.3))
 ```
 
-The code presented above is compact and can be used as the basis for other inset maps but the results, in Figure \@ref(fig:insetmap2), provide a poor representation of the locations of Hawaii and Alaska.
-For a more in-depth approach, see the [`us-map`](https://geocompx.github.io/geocompkg/articles/us-map.html) vignette from the **geocompkg**.
+El código presentado más arriba es compacto y puede utilizarse como base para otros mapas de inserción, pero los resultados proporcionan una mala representación de las ubicaciones de Hawai y Alaska.
+Para un enfoque más detallado, consulte la viñeta [`us-map`](https://geocompx.github.io/geocompkg/articles/us-map.html) del **geocompkg**.
 
-## Animated maps
+## Mapas animados
 
-\index{map making!animated maps}
-\index{tmap (package)!animated maps}
-Faceted maps, described in Section \@ref(faceted-maps), can show how spatial distributions of variables change (e.g., over time), but the approach has disadvantages.
-Facets become tiny when there are many of them.
-Furthermore, the fact that each facet is physically separated on the screen or page means that subtle differences between facets can be hard to detect.
+Los mapas facetados pueden mostrar cómo cambian las distribuciones espaciales de las variables (por ejemplo, a lo largo del tiempo), pero el enfoque tiene desventajas.
+Las facetas se vuelven diminutas cuando hay muchas.
+Además, el hecho de que cada faceta esté físicamente separada en la pantalla o página hace que las diferencias sutiles entre facetas puedan ser difíciles de detectar.
 
-Animated maps solve these issues.
-Although they depend on digital publication, this is becoming less of an issue as more and more content moves online.
-Animated maps can still enhance paper reports: you can always link readers to a web-page containing an animated (or interactive) version of a printed map to help make it come alive.
-There are several ways to generate animations in R, including with animation packages such as **gganimate**, which builds on **ggplot2** (see Section \@ref(other-mapping-packages)).
-This section focuses on creating animated maps with **tmap** because its syntax will be familiar from previous sections and the flexibility of the approach.
+Los mapas animados resuelven estos problemas.
+Aunque dependen de la publicación digital, esto está dejando de ser un problema a medida que aumenta el contenido en línea.
+Los mapas animados pueden seguir mejorando los informes en papel: siempre se puede enlazar a los lectores con una página web que contenga una versión animada (o interactiva) de un mapa impreso para que cobre vida.
+Hay varias formas de generar animaciones en R, incluso con paquetes de animación como **gganimate**, que se basa en **ggplot2**.
+Esta sección se centra en la creación de mapas animados con **tmap** porque su sintaxis le resultará familiar de las secciones anteriores y por la flexibilidad del enfoque.
 
-Figure \@ref(fig:urban-animated) is a simple example of an animated map.
-Unlike the faceted plot, it does not squeeze multiple maps into a single screen and allows the reader to see how the spatial distribution of the world's most populous agglomerations evolve over time (see the book's website for the animated version).
+La siguiente figura es un ejemplo sencillo de mapa animado.
+A diferencia del gráfico facetado, no aprieta varios mapas en una sola pantalla y permite al lector ver cómo evoluciona en el tiempo la distribución espacial de las aglomeraciones más pobladas del mundo (véase la versión animada en el sitio web del libro).
 
-```{r urban-animated, message=FALSE, fig.cap="Animated map showing the top 30 largest urban agglomerations from 1950 to 2030 based on population projects by the United Nations. Animated version available online at: r.geocompx.org.", fig.scap="Animated map showing the top 30 largest 'urban agglomerations'.", echo=FALSE}
-if (knitr::is_latex_output()){
-    knitr::include_graphics("figures/urban-animated.png")
-} else if (knitr::is_html_output()){
-    knitr::include_graphics("figures/urban-animated.gif")
-}
-```
+![](urban-animated.gif)
 
-```{r 08-mapping-21, echo=FALSE, eval=FALSE}
-source("https://github.com/geocompx/geocompr/raw/main/code/09-urban-animation.R")
-```
+El mapa animado ilustrado anteriormente puede crearse utilizando las mismas técnicas **tmap** que generan mapas facetados.
+Hay dos diferencias, sin embargo, relacionadas con los argumentos en `tm_facets()`:
 
-The animated map illustrated in Figure \@ref(fig:urban-animated) can be created using the same **tmap** techniques that generate faceted maps, demonstrated in Section \@ref(faceted-maps).
-There are two differences, however, related to arguments in `tm_facets()`:
+- `nrow = 1, ncol = 1` se añaden para mantener un momento en el tiempo como una capa
+- `free.coords = FALSE`, que mantiene la extensión del mapa para cada iteración del mapa.
 
-- `nrow = 1, ncol = 1` are added to keep one moment in time as one layer
-- `free.coords = FALSE`, which maintains the map extent for each map iteration
-
-These additional arguments are demonstrated in the subsequent code chunk^[There is also a shortcut for this approach: `tm_facets_pagewise()`.]:
+Estos argumentos adicionales se demuestran en el siguiente fragmento de código^[También existe un atajo para este enfoque: `tm_facets_pagewise()`]:
 
 ```{r 08-mapping-22}
 urb_anim = tm_shape(world) + tm_polygons() + 
@@ -719,119 +632,79 @@ urb_anim = tm_shape(world) + tm_polygons() +
   tm_facets(by = "year", nrow = 1, ncol = 1, free.coords = FALSE)
 ```
 
-The resulting `urb_anim` represents a set of separate maps for each year.
-The final stage is to combine them and save the result as a `.gif` file with `tmap_animation()`.
-The following command creates the animation illustrated in Figure \@ref(fig:urban-animated), with a few elements missing, that we will add in during the exercises:
+El `urb_anim` resultante representa un conjunto de mapas separados para cada año.
+La etapa final consiste en combinarlos y guardar el resultado como un archivo `.gif` con `tmap_animation()`.
+El siguiente comando guarda la animación ilustrada:
 
 ```{r 08-mapping-23, eval=FALSE}
 tmap_animation(urb_anim, filename = "urb_anim.gif", delay = 25)
 ```
 
-Another illustration of the power of animated maps is provided in Figure \@ref(fig:animus).
-This shows the development of states in the United States, which first formed in the east and then incrementally to the west and finally into the interior.
-Code to reproduce this map can be found in the script `09-usboundaries.R`.
+## Mapas interactivos
 
-```{r 08-mapping-24, echo=FALSE, eval=FALSE}
-source("https://github.com/geocompx/geocompr/raw/main/code/09-usboundaries.R")
-```
+Aunque los mapas estáticos y animados pueden animar los conjuntos de datos geográficos, los mapas interactivos pueden llevarlos a un nuevo nivel.
+La interactividad puede adoptar muchas formas, la más común y útil de las cuales es la posibilidad de desplazarse y hacer zoom en cualquier parte de un conjunto de datos geográficos superpuesto a un "mapa web" para mostrar el contexto.
+Los niveles de interactividad menos avanzados incluyen ventanas emergentes que aparecen al hacer clic en diferentes características, una especie de etiqueta interactiva.
+Los niveles más avanzados de interactividad incluyen la capacidad de inclinar y girar los mapas, como se demuestra en el ejemplo **mapdeck** a continuación, y la provisión de subparcelas "enlazadas dinámicamente" que se actualizan automáticamente cuando el usuario hace paneos y zooms.
 
-```{r animus, echo=FALSE, message=FALSE, fig.cap="Animated map showing population growth, state formation and boundary changes in the United States, 1790-2010. Animated version available online at r.geocompx.org.", fig.scap="Animated map showing boundary changes in the United States."}
-u_animus_html = "https://user-images.githubusercontent.com/1825120/38543030-5794b6f0-3c9b-11e8-9da9-10ec1f3ea726.gif"
-u_animus_pdf = "figures/animus.png"
-if (knitr::is_latex_output()){
-    knitr::include_graphics(u_animus_pdf)  
-} else if (knitr::is_html_output()){
-    knitr::include_graphics(u_animus_html)  
-}
-```
+Sin embargo, el tipo de interactividad más importante es la visualización de datos geográficos en mapas web interactivos o "deslizantes".
+El lanzamiento del paquete **leaflet** en 2015 (que utiliza la biblioteca JavaScript leaflet) revolucionó la creación de mapas web interactivos desde dentro de R y una serie de paquetes se han construido sobre estos cimientos añadiendo nuevas características (por ejemplo, **leaflet.extras**) y haciendo que la creación de mapas web sea tan sencilla como la creación de mapas estáticos (por ejemplo, **mapview** y **tmap**).
+Esta sección ilustra cada enfoque en el orden inverso.
+Exploraremos cómo hacer mapas deslizantes con **tmap** (cuya sintaxis ya hemos aprendido), **mapview**, **mapdeck** y finalmente **leaflet** (que proporciona un control de bajo nivel sobre los mapas interactivos).
 
-## Interactive maps
+Una característica única de **tmap** es su capacidad para crear mapas estáticos e interactivos utilizando el mismo código.
+Los mapas se pueden ver de forma interactiva en cualquier punto cambiando al modo de vista, utilizando el comando `tmap_mode("view")`.
+Esto se demuestra en el siguiente código, que crea un mapa interactivo de Nueva Zelanda basado en el objeto `tmap` `map_nz`:
 
-\index{map making!interactive maps}
-\index{tmap (package)!interactive maps}
-While static and animated maps can enliven geographic datasets, interactive maps can take them to a new level.
-Interactivity can take many forms, the most common and useful of which is the ability to pan around and zoom into any part of a geographic dataset overlaid on a 'web map' to show context.
-Less advanced interactivity levels include popups which appear when you click on different features, a kind of interactive label.
-More advanced levels of interactivity include the ability to tilt and rotate maps, as demonstrated in the **mapdeck** example below, and the provision of "dynamically linked" sub-plots which automatically update when the user pans and zooms [@pezanowski_senseplace3_2018].
-
-The most important type of interactivity, however, is the display of geographic data on interactive or 'slippy' web maps.
-The release of the **leaflet** package in 2015 (that uses the leaflet JavaScript library) revolutionized interactive web map creation from within R and a number of packages have built on these foundations adding new features (e.g., **leaflet.extras**) and making the creation of web maps as simple as creating static maps (e.g., **mapview** and **tmap**).
-This section illustrates each approach in the opposite order.
-We will explore how to make slippy maps with **tmap** (the syntax of which we have already learned), **mapview**\index{mapview (package)}, **mapdeck**\index{mapdeck (package)} and finally **leaflet**\index{leaflet (package)} (which provides low-level control over interactive maps).
-
-A unique feature of **tmap** mentioned in Section \@ref(static-maps) is its ability to create static and interactive maps using the same code.
-Maps can be viewed interactively at any point by switching to view mode, using the command `tmap_mode("view")`.
-This is demonstrated in the code below, which creates an interactive map of New Zealand based on the `tmap` object `map_nz`, created in Section \@ref(map-obj), and illustrated in Figure \@ref(fig:tmview):
-
-```{r 08-mapping-25, eval=FALSE}
+```{r 08-mapping-25}
 tmap_mode("view")
 map_nz
 ```
 
-```{r tmview, message=FALSE, fig.cap="Interactive map of New Zealand created with tmap in view mode. Interactive version available online at: r.geocompx.org.", fig.scap="Interactive map of New Zealand.", echo=FALSE}
-if (knitr::is_latex_output()){
-    knitr::include_graphics("figures/tmview-1.png")
-} else if (knitr::is_html_output()){
-    # tmap_mode("view")
-    # m_tmview = map_nz
-    # tmap_save(m_tmview, "tmview-1.html")
-    # file.copy("tmview-1.html", "../geocompx.org/static/img/tmview-1.html")
-    knitr::include_url("https://geocompx.org/static/img/tmview-1.html")
-}
-```
-
-<!--toDo:jn-->
-<!-- tmap_leaflet? -->
-Now that the interactive mode has been 'turned on', all maps produced with **tmap** will launch (another way to create interactive maps is with the `tmap_leaflet()` function).
-Notable features of this interactive mode include the ability to specify the basemap  with `tm_basemap()` (or `tmap_options()`) as demonstrated below (result not shown):
+Ahora que el modo interactivo ha sido 'activado', todos los mapas producidos con **tmap** se lanzarán (otra forma de crear mapas interactivos es con la función `tmap_leaflet()`).
+Entre las características destacables de este modo interactivo se incluye la posibilidad de especificar el mapa base con `tm_basemap()` (o `tmap_options()`) como se demuestra a continuación (resultado no mostrado):
 
 ```{r 08-mapping-26, eval=FALSE}
 map_nz + tm_basemap(server = "OpenTopoMap")
 ```
 
-An impressive and little-known feature of **tmap**'s view mode is that it also works with faceted plots.
-The argument `sync` in `tm_facets()` can be used in this case to produce multiple maps with synchronized zoom and pan settings, as illustrated in Figure \@ref(fig:sync), which was produced by the following code:
+Una característica impresionante y poco conocida del modo de visualización de **tmap** es que también funciona con gráficos facetados.
+El argumento `sync` de `tm_facets()` puede utilizarse en este caso para producir múltiples mapas con ajustes de zoom y panorámica sincronizados, como se ilustra abajo:
 
-```{r 08-mapping-27, eval=FALSE}
+```{r sync, fig.cap="Faceted interactive maps of global coffee production in 2016 and 2017 in sync, demonstrating tmap's view mode in action.", fig.scap="Faceted interactive maps of global coffee production."}
+
 world_coffee = left_join(world, coffee_data, by = "name_long")
 facets = c("coffee_production_2016", "coffee_production_2017")
-tm_shape(world_coffee) + tm_polygons(facets) + 
-  tm_facets_wrap(nrow = 1, sync = TRUE)
+
+coffee <- 
+  tm_shape(world_coffee) + tm_polygons(facets) + 
+  tm_facets_wrap(nrow = 2, sync = TRUE)
+
+coffee
 ```
 
-```{r sync, message=FALSE, fig.cap="Faceted interactive maps of global coffee production in 2016 and 2017 in sync, demonstrating tmap's view mode in action.", fig.scap="Faceted interactive maps of global coffee production.", echo=FALSE}
-knitr::include_graphics("figures/interactive-facets.png")
-```
-
-Switch **tmap** back to plotting mode with the same function:
+Cambie **tmap** de nuevo al modo de trazado con la misma función:
 
 ```{r 08-mapping-28}
 tmap_mode("plot")
 ```
 
-If you are not proficient with **tmap**, the quickest way to create interactive maps in R may be with **mapview**\index{mapview (package)}.
-The following 'one liner' is a reliable way to interactively explore a wide range of geographic data formats:
+Si no domina **tmap**, la forma más rápida de crear mapas interactivos en R puede ser con **mapview**.
+El siguiente 'one liner' es una forma fiable de explorar interactivamente una amplia gama de formatos de datos geográficos:
 
-```{r 08-mapping-29, eval=FALSE}
+```{r 08-mapping-29}
 mapview::mapview(nz)
 ```
 
-```{r mapview, message=FALSE, fig.cap="Illustration of mapview in action.", echo=FALSE}
-knitr::include_graphics("figures/mapview.png")
-# knitr::include_graphics("https://user-images.githubusercontent.com/1825120/39979522-e8277398-573e-11e8-8c55-d72c6bcc58a4.png")
-# mv = mapview::mapview(nz)
-# mv@map
-```
+**mapview** tiene una sintaxis concisa pero potente.
+Por defecto, dispone de algunas funciones estándar de los SIG, como información sobre la posición del ratón, consulta de atributos (mediante ventanas emergentes), barra de escala y botones de zoom a capa.
+También ofrece controles avanzados, como la posibilidad de *"burst"* conjuntos de datos en varias capas y la adición de varias capas con "+" seguido del nombre de un objeto geográfico. 
+Además, permite colorear automáticamente los atributos mediante el argumento `zcol`.
+En esencia, puede considerarse una API de **leaflet** basada en datos (para más información sobre **leaflet**, véase más adelante). 
+Dado que **mapview** siempre espera un objeto espacial (incluidos `sf` y `SpatRaster`) como primer argumento, funciona bien al final de expresiones canalizadas. 
+Consideremos el siguiente ejemplo, en el que **sf** se utiliza para intersecar líneas y polígonos y, a continuación, se visualiza con **mapview**.
 
-**mapview** has a concise syntax yet is powerful.
-By default, it has some standard GIS functionality such as mouse position information, attribute queries (via pop-ups), scale bar, and zoom-to-layer buttons.
-It also offers advanced controls including the ability to 'burst' datasets into multiple layers and the addition of multiple layers with `+` followed by the name of a geographic object. 
-Additionally, it provides automatic coloring of attributes via the `zcol` argument.
-In essence, it can be considered a data-driven **leaflet** API\index{API} (see below for more information about **leaflet**). 
-Given that **mapview** always expects a spatial object (including `sf` and `SpatRaster`) as its first argument, it works well at the end of piped expressions. 
-Consider the following example where **sf** is used to intersect lines and polygons and then is visualized with **mapview** (Figure \@ref(fig:mapview2)).
-
-```{r 08-mapping-30, eval=FALSE}
+```{r 08-mapping-30}
 library(mapview)
 oberfranken = subset(franconia, district == "Oberfranken")
 trails |>
@@ -843,74 +716,34 @@ trails |>
   breweries
 ```
 
-```{r mapview2, message=FALSE, fig.cap="Using mapview at the end of a sf-based pipe expression.", echo=FALSE, warning=FALSE}
-knitr::include_graphics("figures/mapview-example.png")
-# knitr::include_graphics("https://user-images.githubusercontent.com/1825120/39979271-5f515256-573d-11e8-9ede-e472ca007d73.png")
-```
+Una cosa importante a tener en cuenta es que las capas de **mapview** se añaden mediante el operador `+` (similar a **ggplot2** o **tmap**).
+Por defecto, **mapview** utiliza la biblioteca JavaScript leaflet para renderizar los mapas de salida, que es fácil de usar y tiene un montón de características.
+Sin embargo, algunas bibliotecas de renderizado alternativas podrían ser más performantes (trabajar más suavemente en conjuntos de datos más grandes).
+**mapview** permite establecer bibliotecas de renderizado alternativas (`"leafgl"` y `"mapdeck"`) en `mapviewOptions()`. ^[También puede intentar utilizar `mapviewOptions(georaster = TRUE)` para obtener visualizaciones de mayor rendimiento de grandes datos rasterizados].
+Para más información sobre **mapview**, consulte el sitio web del paquete en: [r-spatial.github.io/mapview/](https://r-spatial.github.io/mapview/articles/).
 
-One important thing to keep in mind is that **mapview** layers are added via the `+` operator (similar to **ggplot2** or **tmap**).
-By default, **mapview** uses the leaflet JavaScript library to render the output maps, which is user-friendly and has a lot of features.
-However, some alternative rendering libraries could be more performant (work more smoothly on larger datasets).
-**mapview** allows to set alternative rendering libraries (`"leafgl"` and `"mapdeck"`) in the `mapviewOptions()`.^[You may also try to use `mapviewOptions(georaster = TRUE)` for more performant visualizations of large raster data.]
-For further information on **mapview**, see the package's website at: [r-spatial.github.io/mapview/](https://r-spatial.github.io/mapview/articles/).
+Existen otras formas de crear mapas interactivos con R.
+El paquete **googleway**, por ejemplo, proporciona una interfaz de mapas interactivos que es flexible y extensible
+(véase [`googleway-vignette`](https://cran.r-project.org/web/packages/googleway/vignettes/googleway-vignette.html) para más detalles).
+Otro enfoque del mismo autor es **[mapdeck](https://github.com/SymbolixAU/mapdeck)**, que proporciona acceso al framework `Deck.gl` de Uber.
+Su uso de WebGL permite visualizar de forma interactiva grandes conjuntos de datos de hasta millones de puntos.
+El paquete utiliza Mapbox [tokens de acceso](https://docs.mapbox.com/help/getting-started/access-tokens/), para lo cual debe registrarse antes de utilizar el paquete.
 
-There are other ways to create interactive maps with R.
-The **googleway** package\index{googleway (package)}, for example, provides an interactive mapping interface that is flexible and extensible
-(see the [`googleway-vignette`](https://cran.r-project.org/web/packages/googleway/vignettes/googleway-vignette.html) for details).
-Another approach by the same author is **[mapdeck](https://github.com/SymbolixAU/mapdeck)**, which provides access to Uber's `Deck.gl` framework\index{mapdeck (package)}.
-Its use of WebGL enables it to interactively visualize large datasets up to millions of points.
-The package uses Mapbox [access tokens](https://docs.mapbox.com/help/getting-started/access-tokens/), which you must register for before using the package.
+:::{.callout-note}
+Ten en cuenta que el siguiente bloque asume que el token de acceso está almacenado en tu entorno R como `MAPBOX=your_unique_key`.
+Esto se puede añadir con `usethis::edit_r_environ()`.
+:::
 
-```{block2 08-mapping-31, type='rmdnote'}
-Note that the following block assumes the access token is stored in your R environment as `MAPBOX=your_unique_key`.
-This can be added with `usethis::edit_r_environ()`.
-```
+Una característica exclusiva de **mapdeck** es que ofrece perspectivas interactivas en 2,5D, como se ilustra en la figura \ref(fig:mapdeck).
+Esto significa que puedes desplazarte, hacer zoom y rotar por los mapas, y ver los datos "extruidos" del mapa.
 
-A unique feature of **mapdeck** is its provision of interactive 2.5D perspectives, illustrated in Figure \@ref(fig:mapdeck).
-This means you can can pan, zoom and rotate around the maps, and view the data 'extruded' from the map.
-Figure \@ref(fig:mapdeck), generated by the following code chunk, visualizes road traffic crashes in the UK, with bar height representing casualties per area.
+Por último, pero no por ello menos importante, está **leaflet**, que es el paquete de mapeo interactivo más maduro y utilizado en R\index{leaflet (paquete)}.
+**leaflet** proporciona una interfaz de nivel relativamente bajo a la biblioteca JavaScript Leaflet y muchos de sus argumentos pueden entenderse leyendo la documentación de la biblioteca JavaScript original (véase [leafletjs.com](https://leafletjs.com/)).
 
-```{r 08-mapping-32, engine='zsh', echo=FALSE, eval=FALSE}
-https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/3d-heatmap/heatmap-data.csv
-curl -i https://git.io -F "url=https://raw.githubusercontent.com/uber-common/deck.gl-data/master/examples/3d-heatmap/heatmap-data.csv" \
-    -F "code=geocompr-mapdeck"
-```
+Los mapas Leaflet se crean con `leaflet()`, cuyo resultado es un objeto de mapa `leaflet` que puede ser canalizado a otras funciones **leaflet**.
+Esto permite añadir múltiples capas de mapas y ajustes de control de forma interactiva, como se demuestra en el siguiente código.
 
-```{r 08-mapping-33, eval=FALSE}
-library(mapdeck)
-set_token(Sys.getenv("MAPBOX"))
-crash_data = read.csv("https://git.io/geocompr-mapdeck")
-crash_data = na.omit(crash_data)
-ms = mapdeck_style("dark")
-mapdeck(style = ms, pitch = 45, location = c(0, 52), zoom = 4) |>
-  add_grid(data = crash_data, lat = "lat", lon = "lng", cell_size = 1000,
-           elevation_scale = 50, colour_range = hcl.colors(6, "plasma"))
-```
-
-```{r mapdeck, echo=FALSE, fig.cap="Map generated by mapdeck, representing road traffic casualties across the UK. Height of 1 km cells represents number of crashes.", fig.scap="Map generated by mapdeck."}
-knitr::include_graphics("figures/mapdeck-mini.png")
-```
-
-You can zoom and drag the map in the browser, in addition to rotating and tilting it when pressing `Cmd`/`Ctrl`.
-Multiple layers can be added with the pipe operator, as demonstrated in the [`mapdeck` vignettes](https://cran.r-project.org/web/packages/mapdeck/vignettes/mapdeck.html). 
-**mapdeck** also supports `sf` objects, as can be seen by replacing the `add_grid()` function call in the preceding code chunk with `add_polygon(data = lnd, layer_id = "polygon_layer")`, to add polygons representing London to an interactive tilted map.
-
-```{r 08-mapping-35, eval=FALSE, echo=FALSE}
-library(mapdeck)
-set_token(Sys.getenv("MAPBOX"))
-df = read.csv("https://git.io/geocompr-mapdeck")
-ms = mapdeck_style('dark')
-mapdeck(style = ms, pitch = 45, location = c(0, 52), zoom = 4) |>
-  add_polygon(data = lnd, layer_id = "polygon_layer")
-```
-
-Last but not least is **leaflet** which is the most mature and widely used interactive mapping package in R\index{leaflet (package)}.
-**leaflet** provides a relatively low-level interface to the Leaflet JavaScript library and many of its arguments can be understood by reading the documentation of the original JavaScript library (see [leafletjs.com](https://leafletjs.com/)).
-
-Leaflet maps are created with `leaflet()`, the result of which is a `leaflet` map object which can be piped to other **leaflet** functions.
-This allows multiple map layers and control settings to be added interactively, as demonstrated in the code below which generates Figure \@ref(fig:leaflet) (see [rstudio.github.io/leaflet/](https://rstudio.github.io/leaflet/) for details).
-
-```{r leaflet-code, echo=TRUE, eval=FALSE}
+```{r lleaflet, message=FALSE, fig.cap="The leaflet package in action, showing cycle hire points in London. See interactive version [online](https://geocompr.github.io/img/leaflet.html).", fig.scap="The leaflet package in action."}
 pal = colorNumeric("RdYlBu", domain = cycle_hire$nbikes)
 leaflet(data = cycle_hire) |> 
   addProviderTiles(providers$CartoDB.Positron) |>
@@ -921,282 +754,3 @@ leaflet(data = cycle_hire) |>
   addMiniMap()
 ```
 
-```{r leaflet, message=FALSE, fig.cap="The leaflet package in action, showing cycle hire points in London. See interactive version [online](https://geocompr.github.io/img/leaflet.html).", fig.scap="The leaflet package in action.", echo=FALSE}
-if (knitr::is_latex_output() | knitr::is_html_output()){
-  knitr::include_graphics("figures/leaflet-1.png")
-} else {
-  # pre-generated for https://github.com/ropensci/stplanr/issues/385
-  # pal = colorNumeric("RdYlBu", domain = cycle_hire$nbikes)
-  # m = leaflet(data = cycle_hire) |>
-  #   addProviderTiles(providers$CartoDB.Positron) |>
-  #   addCircles(col = ~pal(nbikes), opacity = 0.9) |>
-  #   addPolygons(data = lnd, fill = FALSE) |>
-  #   addLegend(pal = pal, values = ~nbikes) |>
-  #   setView(lng = -0.1, 51.5, zoom = 12) |>
-  #   addMiniMap()
-  # htmlwidgets::saveWidget(m, "leaflet.html")
-  # browseURL("leaflet.html")
-  # file.rename("leaflet.html", "~/geocompr/geocompr.github.io/static/img/leaflet.html")
-  # abort old way of including - mixed content issues
-  knitr::include_url("https://geocompr.github.io/img/leaflet.html")
-}
-```
-
-## Mapping applications
-
-\index{map making!mapping applications}
-The interactive web maps demonstrated in Section \@ref(interactive-maps) can go far.
-Careful selection of layers to display, base-maps and pop-ups can be used to communicate the main results of many projects involving geocomputation.
-But the web mapping approach to interactivity has limitations:
-
-- Although the map is interactive in terms of panning, zooming and clicking, the code is static, meaning the user interface is fixed
-- All map content is generally static in a web map, meaning that web maps cannot scale to handle large datasets easily
-- Additional layers of interactivity, such a graphs showing relationships between variables and 'dashboards' are difficult to create using the web-mapping approach
-
-Overcoming these limitations involves going beyond static web mapping and towards geospatial frameworks and map servers.
-Products in this field include [GeoDjango](https://docs.djangoproject.com/en/4.0/ref/contrib/gis/)\index{GeoDjango} (which extends the Django web framework and is written in [Python](https://github.com/django/django))\index{Python}, [MapServer](https://github.com/mapserver/mapserver)\index{MapServer} (a framework for developing web applications, largely written in C and C++)\index{C++} and [GeoServer](https://github.com/geoserver/geoserver) (a mature and powerful map server written in Java\index{Java}).
-Each of these is scalable, enabling maps to be served to thousands of people daily, assuming there is sufficient public interest in your maps!
-The bad news is that such server-side solutions require much skilled developer time to set-up and maintain, often involving teams of people with roles such as a dedicated geospatial database administrator ([DBA](https://wiki.gis.com/wiki/index.php/Database_administrator)).
-
-Fortunately for R programmers, web mapping applications can now be rapidly created wih **shiny**.\index{shiny (package)}
-As described in the open source book [Mastering Shiny](https://mastering-shiny.org/), **shiny** is an R package and framework for converting R code into interactive web applications [@wickham_mastering_2021].
-You can embed interactive maps in shiny apps thanks to functions such as `tmap::renderTmap()` and [`leaflet::renderLeaflet()`](https://rstudio.github.io/leaflet/shiny.html).
-This section gives some context, teaches the basics of **shiny** from a web mapping perspective and culminates in a full-screen mapping application in less than 100 lines of code.
-
-**shiny** is well documented at [shiny.rstudio.com](https://shiny.rstudio.com/), which highlights the two components of every **shiny** app: 'front end' (the bit the user sees) and 'back end' code.
-In **shiny** apps, these elements are typically created in objects named `ui` and `server` within an R script named `app.R`, which lives in an 'app folder'.
-This allows web mapping applications to be represented in a single file, such as the [`CycleHireApp/app.R`](https://github.com/geocompx/geocompr/blob/main/apps/CycleHireApp/app.R) file in the book's GitHub repo.
-
-```{block2 shiny, type = 'rmdnote'}
-In **shiny** apps these are often split into `ui.R` (short for user interface) and `server.R` files, naming conventions used by `shiny-server`, a server-side Linux application for serving shiny apps on public-facing websites.
-`shiny-server` also serves apps defined by a single `app.R` file in an 'app folder'.
-Learn more at: https://github.com/rstudio/shiny-server.
-```
-
-Before considering large apps, it is worth seeing a minimal example, named 'lifeApp', in action.^[
-The word 'app' in this context refers to 'web application' and should not be confused with smartphone apps, the more common meaning of the word.
-]
-The code below defines and launches --- with the command `shinyApp()` --- a lifeApp, which provides an interactive slider allowing users to make countries appear with progressively lower levels of life expectancy (see Figure \@ref(fig:lifeApp)):
-
-```{r 08-mapping-37, eval=FALSE}
-library(shiny)    # for shiny apps
-library(leaflet)  # renderLeaflet function
-library(spData)   # loads the world dataset 
-ui = fluidPage(
-  sliderInput(inputId = "life", "Life expectancy", 49, 84, value = 80),
-      leafletOutput(outputId = "map")
-  )
-server = function(input, output) {
-  output$map = renderLeaflet({
-    leaflet() |> 
-      # addProviderTiles("OpenStreetMap.BlackAndWhite") |>
-      addPolygons(data = world[world$lifeExp < input$life, ])})
-}
-shinyApp(ui, server)
-```
-
-```{r lifeApp, echo=FALSE, message=FALSE, fig.cap="Screenshot showing minimal example of a web mapping application created with shiny.", fig.scap="Minimal example of a web mapping application."}
-# knitr::include_graphics("https://user-images.githubusercontent.com/1825120/39690606-8f9400c8-51d2-11e8-84d7-f4a66a477d2a.png")
-knitr::include_graphics("figures/shiny-app.png")
-```
-
-The **user interface** (`ui`) of lifeApp is created by `fluidPage()`.
-This contains input and output 'widgets' --- in this case, a `sliderInput()` (many other `*Input()` functions are available) and a `leafletOutput()`.
-These are arranged row-wise by default, explaining why the slider interface is placed directly above the map in Figure \@ref(fig:lifeApp) (see `?column` for adding content column-wise).
-
-The **server side** (`server`) is a function with `input` and `output` arguments.
-`output` is a list of objects containing elements generated by `render*()` function --- `renderLeaflet()` which in this example generates `output$map`.
-Input elements such as `input$life` referred to in the server must relate to elements that exist in the `ui` --- defined by `inputId = "life"` in the code above.
-The function `shinyApp()` combines both the `ui` and `server` elements and serves the results interactively via a new R process.
-When you move the slider in the map shown in Figure \@ref(fig:lifeApp), you are actually causing R code to re-run, although this is hidden from view in the user interface.
-
-Building on this basic example and knowing where to find help (see `?shiny`), the best way forward now may be to stop reading and start programming!
-The recommended next step is to open the previously mentioned [`CycleHireApp/app.R`](https://github.com/geocompx/geocompr/blob/main/apps/CycleHireApp/app.R) script in an IDE of choice, modify it and re-run it repeatedly.
-The example contains some of the components of a web mapping application implemented in **shiny** and should 'shine' a light on how they behave.
-
-The `CycleHireApp/app.R` script contains **shiny** functions that go beyond those demonstrated in the simple 'lifeApp' example.
-These include `reactive()` and `observe()` (for creating outputs that respond to the user interface --- see `?reactive`) and `leafletProxy()` (for modifying a `leaflet` object that has already been created).
-Such elements are critical to the creation of web mapping applications implemented in **shiny**.
-A range of 'events' can be programmed including advanced functionality such as drawing new layers or subsetting data, as described in the shiny section of RStudio's **leaflet** [website](https://rstudio.github.io/leaflet/shiny.html).
-
-```{block2 shinynote, type='rmdnote'}
-There are a number of ways to run a **shiny** app.
-For RStudio users, the simplest way is probably to click on the 'Run App' button located in the top right of the source pane when an `app.R`, `ui.R` or `server.R` script is open.
-**shiny** apps can also be initiated by using `runApp()` with the first argument being the folder containing the app code and data: `runApp("CycleHireApp")` in this case (which assumes a folder named `CycleHireApp` containing the `app.R` script is in your working directory).
-You can also launch apps from a Unix command line with the command `Rscript -e 'shiny::runApp("CycleHireApp")'`.
-```
-
-Experimenting with apps such as `CycleHireApp` will build not only your knowledge of web mapping applications in R, but also your practical skills.
-Changing the contents of `setView()`, for example, will change the starting bounding box that the user sees when the app is initiated.
-Such experimentation should not be done at random, but with reference to relevant documentation, starting with `?shiny`, and motivated by a desire to solve problems such as those posed in the exercises.
-
-**shiny** used in this way can make prototyping mapping applications faster and more accessible than ever before (deploying **shiny** apps, https://shiny.rstudio.com/deploy/, is a separate topic beyond the scope of this chapter).
-Even if your applications are eventually deployed using different technologies, **shiny** undoubtedly allows web mapping applications to be developed in relatively few lines of code (86 in the case of CycleHireApp).
-That does not stop shiny apps getting rather large.
-The Propensity to Cycle Tool (PCT) hosted at [pct.bike](https://www.pct.bike/), for example, is a national mapping tool funded by the UK's Department for Transport.
-The PCT is used by dozens of people each day and has multiple interactive elements based on more than 1000 lines of [code](https://github.com/npct/pct-shiny/blob/master/regions_www/m/server.R) [@lovelace_propensity_2017].
-
-While such apps undoubtedly take time and effort to develop, **shiny** provides a framework for reproducible prototyping that should aid the development process.
-One potential problem with the ease of developing prototypes with **shiny** is the temptation to start programming too early, before the purpose of the mapping application has been envisioned in detail.
-For that reason, despite advocating **shiny**, we recommend starting with the longer established technology of a pen and paper as the first stage for interactive mapping projects.
-This way your prototype web applications should be limited not by technical considerations, but by your motivations and imagination.
-
-```{r CycleHireApp-html, echo=FALSE, message=FALSE, fig.cap="CycleHireApp, a simple web mapping application for finding the closest cycle hiring station based on your location and requirement of cycles. Interactive version available online at r.geocompx.org.",fig.scap="Cycle Hire App, a simple web mapping application.", eval=knitr::is_html_output(), out.width="690"}
-knitr::include_app("https://shiny.robinlovelace.net/CycleHireApp/")
-```
-
-```{r CycleHireApp-latex, echo=FALSE, message=FALSE, fig.cap="CycleHireApp, a simple web mapping application for finding the closest cycle hiring station based on your location and requirement of cycles. Interactive version available online at r.geocompx.org.", fig.scap="coffeeApp, a simple web mapping application.", eval=knitr::is_latex_output()}
-knitr::include_graphics("figures/09_cycle_hire_app.png")
-```
-
-## Other mapping packages
-
-**tmap** provides a powerful interface for creating a wide range of static maps (Section \@ref(static-maps)) and also supports interactive maps (Section \@ref(interactive-maps)).
-But there are many other options for creating maps in R.
-The aim of this section is to provide a taster of some of these and pointers for additional resources: map making is a surprisingly active area of R package development, so there is more to learn than can be covered here.
-
-The most mature option is to use `plot()` methods provided by core spatial packages **sf** and **terra**, covered in Sections \@ref(basic-map) and \@ref(basic-map-raster), respectively.
-What we have not mentioned in those sections was that plot methods for vector and raster objects can be combined when the results draw onto the same plot area (elements such as keys in **sf** plots and multi-band rasters will interfere with this).
-This behavior is illustrated in the subsequent code chunk which generates Figure \@ref(fig:nz-plot).
-`plot()` has many other options which can be explored by following links in the `?plot` help page and the **sf** vignette [`sf5`](https://cran.r-project.org/web/packages/sf/vignettes/sf5.html).
-
-```{r nz-plot, message=FALSE, fig.cap="Map of New Zealand created with plot(). The legend to the right refers to elevation (1000 m above sea level).", fig.scap="Map of New Zealand created with plot()."}
-g = st_graticule(nz, lon = c(170, 175), lat = c(-45, -40, -35))
-plot(nz_water, graticule = g, axes = TRUE, col = "blue")
-terra::plot(nz_elev / 1000, add = TRUE, axes = FALSE)
-plot(st_geometry(nz), add = TRUE)
-```
-
-The **tidyverse**\index{tidyverse (package)} plotting package **ggplot2** also supports `sf` objects with `geom_sf()`\index{ggplot2 (package)}.
-The syntax is similar to that used by **tmap**:
-an initial `ggplot()` call is followed by one or more layers, that are added with `+ geom_*()`, where `*` represents a layer type such as `geom_sf()` (for `sf` objects) or `geom_points()` (for points).
-
-**ggplot2** plots graticules by default.
-The default settings for the graticules can be overridden using `scale_x_continuous()`, `scale_y_continuous()` or [`coord_sf(datum = NA)`](https://github.com/tidyverse/ggplot2/issues/2071).
-Other notable features include the use of unquoted variable names encapsulated in `aes()` to indicate which aesthetics vary and switching data sources using the `data` argument, as demonstrated in the code chunk below which creates Figure \@ref(fig:nz-gg2):
-
-```{r nz-gg, eval=FALSE}
-library(ggplot2)
-g1 = ggplot() + geom_sf(data = nz, aes(fill = Median_income)) +
-  geom_sf(data = nz_height) +
-  scale_x_continuous(breaks = c(170, 175))
-g1
-```
-
-Another benefit of maps based on **ggplot2** is that they can easily be given a level of interactivity when printed using the function `ggplotly()` from the **plotly** package\index{plotly (package)}.
-Try `plotly::ggplotly(g1)`, for example, and compare the result with other **plotly** mapping functions described at: [blog.cpsievert.me](https://blog.cpsievert.me/2018/03/30/visualizing-geo-spatial-data-with-sf-and-plotly/).
-
-```{r 08-mapping-38, eval=FALSE, echo=FALSE}
-plotly::ggplotly(g1)
-```
-
-An advantage of **ggplot2** is that it has a strong user community and many add-on packages.
-It includes **ggspatial**, which enhances **ggplot2**'s mapping capabilities by providing options to add a north arrow (`annotation_north_arrow()`) and a scale bar (`annotation_scale()`), or to add background tiles (`annotation_map_tile()`).
-It also accepts various spatial data classes with `layer_spatial()`.
-Thus, we are able to plot `SpatRaster` objects from **terra** using this function as seen in Figure \@ref(fig:nz-gg2).
-
-```{r ggterra, eval=FALSE, message=FALSE, warning=FALSE}
-library(ggspatial)
-ggplot() + 
-  layer_spatial(nz_elev) +
-  geom_sf(data = nz, fill = NA) +
-  annotation_scale() +
-  scale_x_continuous(breaks = c(170, 175)) +
-  scale_fill_continuous(na.value = NA)
-```
-
-```{r nz-gg2, message=FALSE, fig.cap="Comparison of map of New Zealand created with ggplot2 alone (left) and ggplot2 and ggspatial (right).", out.width="45%", fig.show='hold', echo=FALSE}
-library(ggplot2)
-g1 = ggplot() + geom_sf(data = nz, aes(fill = Median_income)) +
-  geom_sf(data = nz_height) +
-  scale_x_continuous(breaks = c(170, 175))
-g1
-library(ggspatial)
-ggplot() + 
-  layer_spatial(nz_elev) +
-  geom_sf(data = nz, fill = NA) +
-  annotation_scale() +
-  scale_x_continuous(breaks = c(170, 175)) +
-  scale_fill_continuous(na.value = NA)
-```
-
-At the same time, **ggplot2** has a few drawbacks, for example the `geom_sf()` function is not always able to create a desired legend to use from the spatial [data](https://github.com/tidyverse/ggplot2/issues/2037).
-Good additional **ggplot2** resources can be found in the open source [ggplot2 book](https://ggplot2-book.org/) [@wickham_ggplot2_2016] and in the descriptions of the multitude of '**gg**packages' such as **ggrepel** and **tidygraph**.
-
-We have covered mapping with **sf**, **terra** and **ggplot2** first because these packages are highly flexible, allowing for the creation of a wide range of static maps.
-Before we cover mapping packages for plotting a specific type of map (in the next paragraph), it is worth considering alternatives to the packages already covered for general-purpose mapping (Table \@ref(tab:map-gpkg)).
-
-```{r map-gpkg, echo=FALSE, message=FALSE, warning=FALSE}
-# code/09-map-pkgs.R
-gpkg_df = readr::read_csv("extdata/generic_map_pkgs.csv")
-map_gpkg_df = select(gpkg_df, Package = package, Title = title)
-map_gpkg_df$Title[map_gpkg_df$Package == "leaflet"] =
-  "Create Interactive Web Maps with Leaflet"
-knitr::kable(map_gpkg_df, 
-             caption = "Selected general-purpose mapping packages.", 
-             caption.short = "Selected general-purpose mapping packages.", 
-             booktabs = TRUE) |>
-  kableExtra::column_spec(2, width = "9cm")
-```
-
-Table \@ref(tab:map-gpkg) shows a range of mapping packages are available, and there are many others not listed in this table.
-Of note is **mapsf**, which can generate range of geographic visualizations including choropleth, 'proportional symbol' and 'flow' maps.
-These are documented in the [`mapsf`](https://cran.r-project.org/web/packages/mapsf/vignettes/mapsf.html)\index{mapsf (package)} vignette.
-
-<!--toDo:jn-->
-<!-- recheck the list (rgdal related) -->
-Several packages focus on specific map types, as illustrated in Table \@ref(tab:map-spkg).
-Such packages create cartograms that distort geographical space, create line maps, transform polygons into regular or hexagonal grids, visualize complex data on grids representing geographic topologies, and create 3D visualizations.
-
-```{r map-spkg, echo=FALSE, message=FALSE}
-# code/09-map-pkgs.R
-spkg_df = readr::read_csv("extdata/specific_map_pkgs.csv")
-map_spkg_df = select(spkg_df, Package = package, Title = title)
-knitr::kable(map_spkg_df, 
-             caption = paste("Selected specific-purpose mapping packages,", 
-                             "with associated metrics."),
-             caption.short = "Selected specific-purpose mapping packages.",
-             booktabs = TRUE)
-```
-
-All of the aforementioned packages, however, have different approaches for data preparation and map creation.
-In the next paragraph, we focus solely on the **cartogram** package\index{cartogram (package)}.
-Therefore, we suggest to read the [linemap](https://github.com/rCarto/linemap)\index{linemap (package)}, [geogrid](https://github.com/jbaileyh/geogrid)\index{geogrid (package)}, [geofacet](https://github.com/hafen/geofacet)\index{geofacet (package)}, and [rayshader](https://github.com/tylermorganwall/rayshader)\index{rayshader (package)} documentations to learn more about them.
-
-A cartogram is a map in which the geometry is proportionately distorted to represent a mapping variable. 
-Creation of this type of map is possible in R with **cartogram**, which allows for creating continuous and non-contiguous area cartograms.
-It is not a mapping package per se, but it allows for construction of distorted spatial objects that could be plotted using any generic mapping package.
-
-The `cartogram_cont()` function creates continuous area cartograms.
-It accepts an `sf` object and name of the variable (column) as inputs.
-Additionally, it is possible to modify the `intermax` argument - maximum number of iterations for the cartogram transformation.
-For example, we could represent median income in New Zeleand's regions as a continuous cartogram (the right-hand panel of Figure \@ref(fig:cartomap1)) as follows:
-
-```{r 08-mapping-39, fig.show='hide', message=FALSE}
-library(cartogram)
-nz_carto = cartogram_cont(nz, "Median_income", itermax = 5)
-tm_shape(nz_carto) + tm_polygons("Median_income")
-```
-
-```{r cartomap1, echo=FALSE, message=FALSE, fig.cap="Comparison of standard map (left) and continuous area cartogram (right).", fig.scap="Comparison of standard map and continuous area cartogram.", warning=FALSE}
-carto_map1 = tm_shape(nz) + 
-  tm_polygons("Median_income",
-              fill.scale = tm_scale(values = "Greens"),
-              fill.legend = tm_legend(title = "Median income (NZD)"))
-carto_map2 = tm_shape(nz_carto) + 
-  tm_polygons("Median_income",
-              fill.scale = tm_scale(values = "Greens"),
-              fill.legend = tm_legend(title = "Median income (NZD)"))
-tmap_arrange(carto_map1, carto_map2)
-```
-
-**cartogram** also offers creation of non-contiguous area cartograms using  `cartogram_ncont()` and Dorling cartograms using `cartogram_dorling()`.
-Non-contiguous area cartograms are created by scaling down each region based on the provided weighting variable.
-Dorling cartograms consist of circles with their area proportional to the weighting variable.
-The code chunk below demonstrates creation of non-contiguous area and Dorling cartograms of US states' population (Figure \@ref(fig:cartomap2)):
-
-```{r 08-mapping-40, fig.show='hide', message=FALSE}
-us_states2163 = st_transform(us_states, "EPSG:2163")
-us_states2163_ncont = cartogram_ncont(us_states2163, "total_pop_15")
-us_states2163_dorling = cartogram_dorling(us_states2163, "total_pop_15")
-```

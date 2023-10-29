@@ -1,5 +1,5 @@
 ---
-title: "input_output"
+title: "Entrada y salida de geo-datos"
 author: "Veronica Andreo"
 date: today
 format: 
@@ -8,12 +8,6 @@ format:
     df-print: kable
 ---
 
-# Geographic data I/O {#read-write}
-
-## Prerequisites
-
-This chapter requires the following packages:
-
 ```{r message=FALSE}
 library(sf)
 library(terra)
@@ -21,43 +15,33 @@ library(dplyr)
 library(spData)
 ```
 
-## Introduction
+## Introducción
 
-This chapter is about reading and writing geographic data.
-Geographic data *input* is essential for geocomputation: real-world applications are impossible without data.
-Data *output* is also vital, enabling others to use valuable new or improved datasets resulting from your work.
-Taken together, these processes of input/output can be referred to as data I/O.
+Este capítulo trata sobre la lectura y escritura de datos geográficos.
+La *entrada* de datos geográficos es esencial para la geocomputación: las aplicaciones del mundo real son imposibles sin datos.
+La *salida* de datos también es vital, ya que permite a otros utilizar valiosos conjuntos de datos nuevos o mejorados resultantes de su trabajo.
+En conjunto, estos procesos de entrada/salida pueden denominarse E/S de datos (I/O en Inglés).
 
-Geographic data I/O is often done with few lines of code at the beginning and end of projects.
-It is often overlooked as a simple one step process.
-However, mistakes made at the outset of projects (e.g. using an out-of-date or in some way faulty dataset) can lead to large problems later down the line, so it is worth putting considerable time into identifying which datasets are *available*, where they can be *found* and how to *retrieve* them.
-These topics are covered in Section \@ref(retrieving-data), which describes various *geoportals*, which collectively contain many terabytes of data, and how to use them.
-To further ease data access, a number of packages for downloading geographic data have been developed.
-These are described in Section \@ref(geographic-data-packages).
+La E/S de datos geográficos suele realizarse con unas pocas líneas de código al principio y al final de los proyectos.
+A menudo se pasa por alto como un simple proceso de un solo paso.
+Sin embargo, los errores cometidos al principio de los proyectos (por ejemplo, utilizar un conjunto de datos obsoleto o defectuoso de alguna manera) pueden dar lugar a grandes problemas más adelante, por lo que vale la pena dedicar un tiempo considerable a identificar qué conjuntos de datos están *disponibles*, dónde se pueden *encontrar* y cómo *recuperarlos*. Por otra parte, existen muchos formatos de archivos geográficos, cada uno de los cuales tiene sus pros y sus contras, como así también diferentes formas de lectura y escritura eficiente.
 
-There are many geographic file formats, each of which has pros and cons.
-These are described in Section \@ref(file-formats).
-The process of actually reading and writing such file formats efficiently is not covered until Sections \@ref(data-input) and \@ref(data-output), respectively.
-The final Section \@ref(visual-outputs) demonstrates methods for saving visual outputs (maps), in preparation for Chapter \@ref(adv-map) on visualization.
+## Recuperación de datos abiertos
 
-## Retrieving open data {#retrieving-data}
+Cada vez hay más datos geográficos disponibles en Internet, muchos de los cuales son de acceso y uso gratuitos (siempre que se dé el crédito correspondiente a sus proveedores)^[Por ejemplo, visite <https://freegisdata.rtwilson.com/> para consultar una lista de sitios web con conjuntos de datos geográficos de libre acceso].
+En cierto modo, ahora hay *demasiados* datos, en el sentido de que a menudo hay varios sitios donde acceder al mismo conjunto de datos.
+Algunos conjuntos de datos son de mala calidad. En este contexto, es vital saber dónde buscar.
+Varios "geoportales" (servicios web que proporcionan conjuntos de datos geoespaciales, como [Data.gov](https://catalog.data.gov/dataset?metadata_type=geospatial)) son un buen punto de partida, ya que ofrecen una amplia gama de datos, pero a menudo sólo para lugares concretos (como se ilustra en la página actualizada de [Wikipedia](https://en.wikipedia.org/wiki/Geoportal) sobre el tema).
 
-A vast and ever-increasing amount of geographic data is available on the internet, much of which is free to access and use (with appropriate credit given to its providers).^[For example, visit https://freegisdata.rtwilson.com/ for a list of websites with freely available geographic datasets.]
-In some ways there is now *too much* data, in the sense that there are often multiple places to access the same dataset.
-Some datasets are of poor quality.
-In this context, it is vital to know where to look, so the first section covers some of the most important sources.
-Various 'geoportals' (web services providing geospatial datasets such as [Data.gov](https://catalog.data.gov/dataset?metadata_type=geospatial)) are a good place to start, providing a wide range of data but often only for specific locations (as illustrated in the updated [Wikipedia page](https://en.wikipedia.org/wiki/Geoportal) on the topic).
+Algunos geoportales globales superan este problema.
+El [portal GEOSS](http://www.geoportal.org/) y el [Copernicus Open Access Hub](https://scihub.copernicus.eu/), por ejemplo, contienen muchos conjuntos de datos ráster con cobertura mundial.
+En el portal [SEDAC](http://sedac.ciesin.columbia.edu/), gestionado por la Administración Nacional de Aeronáutica y del Espacio (NASA), y en el [geoportal INSPIRE](http://inspire-geoportal.ec.europa.eu/) de la Unión Europea, con cobertura mundial y regional, se puede acceder a una gran cantidad de conjuntos de datos vectoriales.
 
-\index{geoportals}
-Some global geoportals overcome this issue.
-The [GEOSS portal](http://www.geoportal.org/) and the [Copernicus Open Access Hub](https://scihub.copernicus.eu/), for example, contain many raster datasets with global coverage.
-A wealth of vector datasets can be accessed from the [SEDAC](http://sedac.ciesin.columbia.edu/) portal run by the National Aeronautics and Space Administration (NASA) and the European Union's [INSPIRE geoportal](http://inspire-geoportal.ec.europa.eu/), with global and regional coverage.
-
-Most geoportals provide a graphical interface allowing datasets to be queried based on characteristics such as spatial and temporal extent, the United States Geological Survey's [EarthExplorer](https://earthexplorer.usgs.gov/) being a prime example.
-*Exploring* datasets interactively on a browser is an effective way of understanding available layers.
-*Downloading* data is best done with code, however, from reproducibility and efficiency perspectives.
-Downloads can be initiated from the command line using a variety of techniques, primarily via URLs and APIs\index{API} (see the [Sentinel API](https://scihub.copernicus.eu/twiki/do/view/SciHubWebPortal/APIHubDescription) for example).
-Files hosted on static URLs can be downloaded with `download.file()`, as illustrated in the code chunk below which accesses PeRL: Permafrost Region Pond and Lake Database from [doi.pangaea.de](https://doi.pangaea.de/10.1594/PANGAEA.868349):
+La mayoría de los geoportales ofrecen una interfaz gráfica que permite consultar los conjuntos de datos en función de características como la extensión espacial y temporal, siendo el [EarthExplorer](https://earthexplorer.usgs.gov/) del Servicio Geológico de Estados Unidos un buen ejemplo.
+*Explorar* los conjuntos de datos de forma interactiva en un navegador es una forma eficaz de comprender las capas disponibles.
+Sin embargo, desde el punto de vista de la reproducibilidad y la eficiencia, es mejor descargar los datos mediante código.
+Las descargas pueden iniciarse desde la línea de comandos mediante diversas técnicas, principalmente a través de URL y API (véase [Sentinel API](https://scihub.copernicus.eu/twiki/do/view/SciHubWebPortal/APIHubDescription), por ejemplo).
+Los archivos alojados en URL estáticas pueden descargarse con `download.file()`, como se ilustra en el fragmento de código siguiente que accede a PeRL: Permafrost Region Pond and Lake Database de [doi.pangaea.de](https://doi.pangaea.de/10.1594/PANGAEA.868349):
 
 ```{r 07-read-write-plot-2, eval=FALSE}
 download.file(url = "https://hs.pangaea.de/Maps/PeRL/PeRL_permafrost_landscapes.zip",
@@ -67,11 +51,10 @@ unzip("PeRL_permafrost_landscapes.zip")
 canada_perma_land = read_sf("PeRL_permafrost_landscapes/canada_perma_land.shp")
 ```
 
-## Geographic data packages
+## Paquetes de datos geográficos
 
-\index{data packages}
-Many R packages have been developed for accessing geographic data, some of which are presented in Table \@ref(tab:datapackages).
-These provide interfaces to one or more spatial libraries or geoportals and aim to make data access even quicker from the command line.
+Se han desarrollado muchos paquetes de R para acceder a datos geográficos, algunos de los cuales se presentan a continuación.
+Éstos proporcionan interfaces a una o más bibliotecas espaciales o geoportales y tienen como objetivo hacer que el acceso a los datos sea aún más rápido desde la línea de comandos.
 
 ```{r datapackages, echo=FALSE, warning=FALSE}
 datapackages = tibble::tribble(
@@ -90,15 +73,14 @@ knitr::kable(datapackages,
   kableExtra::kable_styling(latex_options="scale_down")
 ```
 
+Cabe destacar que la tabla representa sólo un pequeño número de paquetes de datos geográficos disponibles.
+Por ejemplo, existe un gran número de paquetes R para obtener diversos datos sociodemográficos, como **tidycensus** y **tigris** (EE.UU.), **cancensus** (Canadá), **eurostat** y **giscoR** (Unión Europea), o **idbr** (bases de datos internacionales) -- lea [Analyzing US Census Data](https://walker-data.com/census-r) para encontrar algunos ejemplos de cómo analizar dichos datos.
+Del mismo modo, existen varios paquetes de R que dan acceso a datos espaciales de diversas regiones y países, como **bcdata** (provincia de Columbia Británica), **geobr** (Brasil), **RCzechia** (Chequia) o **rgugik** (Polonia).
+Otro paquete destacable es **GSODR**, que proporciona un resumen global de datos meteorológicos diarios en R (consulte el [README](https://github.com/ropensci/GSODR) del paquete para obtener una visión general de las fuentes de datos meteorológicos).
 
-It should be emphasized that Table \@ref(tab:datapackages) represents only a small number of available geographic data packages.
-For example, a large number of R packages exist to obtain various socio-demographic data, such as **tidycensus** and **tigris** (USA),  **cancensus** (Canada), **eurostat** and **giscoR** (European Union), or **idbr** (international databases) -- read [Analyzing US Census Data](https://walker-data.com/census-r) [@walker_analyzing_2022] to find some examples of how to analyse such data.
-Similarly, several R packages exist giving access to spatial data for various regions and countries, such as **bcdata** (Province of British Columbia), **geobr** (Brazil), **RCzechia** (Czechia), or **rgugik** (Poland).
-Other notable package is **GSODR**, which provides Global Summary Daily Weather Data in R (see the package's [README](https://github.com/ropensci/GSODR) for an overview of weather data sources).
-
-Each data package has its own syntax for accessing data.
-This diversity is demonstrated in the subsequent code chunks, which show how to get data using three packages from Table \@ref(tab:datapackages).^[More examples of data downloading using dedicated R packages can be found at https://rspatialdata.github.io/.]
-Country borders are often useful and these can be accessed with the `ne_countries()` function from the **rnaturalearth** package as follows:
+Cada paquete de datos tiene su propia sintaxis para acceder a los datos.
+Esta diversidad se demuestra en los siguientes trozos de código, que muestran cómo obtener datos utilizando tres paquetes de la tabla anterior.^[En <https://rspatialdata.github.io/> se pueden encontrar más ejemplos de descarga de datos utilizando paquetes R dedicados].
+Las fronteras de los países suelen ser útiles y se puede acceder a ellas con la función `ne_countries()` del paquete **rnaturalearth** de la siguiente manera:
 
 ```{r 07-read-write-plot-3}
 library(rnaturalearth)
@@ -108,15 +90,15 @@ class(usa)
 # geodata::gadm("USA", level = 0, path = tempdir())
 ```
 
-By default **rnaturalearth** returns objects of class `Spatial*`.
-The result can be converted into an `sf` objects with `st_as_sf()` as follows:
+Por defecto **rnaturalearth** devuelve objetos de la clase `Spatial*`.
+El resultado se puede convertir en un objeto `sf` con `st_as_sf()` de la siguiente manera:
 
 ```{r 07-read-write-plot-4}
 usa_sf = st_as_sf(usa)
 ```
 
-A second example downloads a series of rasters containing global monthly precipitation sums with spatial resolution of ten minutes (~18.5 km at the equator) using the **geodata** package.
-The result is a multilayer object of class `SpatRaster`.
+Un segundo ejemplo descarga una serie de rásters que contienen sumas mensuales globales de precipitación con una resolución espacial de diez minutos (~18,5 km en el ecuador) utilizando el paquete **geodata**.
+El resultado es un objeto multicapa de la clase `SpatRaster`.
 
 ```{r 07-read-write-plot-5, eval=FALSE}
 library(geodata)
@@ -124,10 +106,10 @@ worldclim_prec = worldclim_global("prec", res = 10, path = tempdir())
 class(worldclim_prec)
 ```
 
-A third example uses the **osmdata** package [@R-osmdata] to find parks from the OpenStreetMap (OSM) database\index{OpenStreetMap}.
-As illustrated in the code-chunk below, queries begin with the function `opq()` (short for OpenStreetMap query), the first argument of which is bounding box, or text string representing a bounding box (the city of Leeds in this case).
-The result is passed to a function for selecting which OSM elements we're interested in (parks in this case), represented by *key-value pairs*.
-Next, they are passed to the function `osmdata_sf()` which does the work of downloading the data and converting it into a list of `sf` objects (see `vignette('osmdata')` for further details):
+Un tercer ejemplo utiliza el paquete **osmdata** para buscar parques en la base de datos OpenStreetMap (OSM).
+Como se ilustra en el fragmento de código siguiente, las consultas comienzan con la función `opq()` (abreviatura de OpenStreetMap query), cuyo primer argumento es bounding box, o cadena de texto que representa un bounding box (la ciudad de Leeds en este caso).
+El resultado se pasa a una función para seleccionar los elementos OSM que nos interesan (parques en este caso), representados por *pares clave-valor*.
+A continuación, se pasan a la función `osmdata_sf()` que hace el trabajo de descargar los datos y convertirlos en una lista de objetos `sf` (ver `vignette('osmdata')` para más detalles):
 
 ```{r 07-read-write-plot-6, eval=FALSE}
 library(osmdata)
@@ -136,37 +118,32 @@ parks = opq(bbox = "leeds uk") |>
   osmdata_sf()
 ```
 
-A limitation with the **osmdata** package is that it is *rate limited*, meaning that it cannot download large OSM datasets (e.g. all the OSM data for a large city).
-To overcome this limitation, the **osmextract** package was developed, which can be used to download and import binary `.pbf` files containing compressed versions of the OSM database for pre-defined regions.
-<!--todo: add proper citation-->
+Una limitación del paquete **osmdata** es que no puede descargar grandes conjuntos de datos OSM (por ejemplo, todos los datos OSM de una gran ciudad).
+Para superar esta limitación, se desarrolló el paquete **osmextract**, que se puede utilizar para descargar e importar archivos binarios `.pbf` que contienen versiones comprimidas de la base de datos OSM para regiones predefinidas.
 
-OpenStreetMap is a vast global database of crowd-sourced data, is growing daily, and has a wider ecosystem of tools enabling easy access to the data, from the [Overpass turbo](https://overpass-turbo.eu/) web service for rapid development and testing of OSM queries to [osm2pgsql](https://osm2pgsql.org/) for importing the data into a PostGIS database.
-Although the quality of datasets derived from OSM varies, the data source and wider OSM ecosystems have many advantages: they provide datasets that are available globally, free of charge, and constantly improving thanks to an army of volunteers.
-Using OSM encourages 'citizen science' and contributions back to the digital commons (you can start editing data representing a part of the world you know well at [www.openstreetmap.org](https://www.openstreetmap.org)).
-Further examples of OSM data in action are provided in Chapters \@ref(gis), \@ref(transport) and \@ref(location).
+OpenStreetMap es una vasta base de datos mundial de origen colectivo que crece día a día y cuenta con un amplio ecosistema de herramientas que facilitan el acceso a los datos, desde el servicio web [Overpass turbo](https://overpass-turbo.eu/) para desarrollar y probar rápidamente consultas OSM hasta [osm2pgsql](https://osm2pgsql.org/) para importar los datos a una base de datos PostGIS.
+Aunque la calidad de los conjuntos de datos derivados de OSM varía, la fuente de datos y los ecosistemas OSM más amplios tienen muchas ventajas: proporcionan conjuntos de datos disponibles a nivel mundial, gratuitos y en constante mejora gracias a un ejército de voluntarios.
+El uso de OSM fomenta la "ciencia ciudadana" y las contribuciones al patrimonio digital (puedes empezar a editar datos que representen una parte del mundo que conozcas bien en [www.openstreetmap.org](https://www.openstreetmap.org)).
 
-Sometimes, packages come with built-in datasets.
-These can be accessed in four ways: by attaching the package (if the package uses 'lazy loading' as **spData** does), with `data(dataset, package = mypackage)`, by referring to the dataset with `mypackage::dataset`, or with `system.file(filepath, package = mypackage)` to access raw data files.
-The following code chunk illustrates the latter two options using the `world` dataset (already loaded by attaching its parent package with `library(spData)`):^[
-For more information on data import with R packages, see Sections 5.5 and 5.6 of @gillespie_efficient_2016.
-]
+A veces, los paquetes vienen con conjuntos de datos incorporados.
+Se puede acceder a ellos de cuatro maneras: adjuntando el paquete (si el paquete utiliza "carga lenta" como **spData**), con `data(dataset, package = mypackage)`, haciendo referencia al conjunto de datos con `mypackage::dataset`, o con `system.file(filepath, package = mypackage)` para acceder a los archivos de datos sin procesar.
+El siguiente fragmento de código ilustra las dos últimas opciones utilizando el conjunto de datos `world` (ya cargado adjuntando su paquete padre con `library(spData)`):
 
 ```{r 07-read-write-plot-7, eval=FALSE}
 world2 = spData::world
 world3 = read_sf(system.file("shapes/world.gpkg", package = "spData"))
 ```
 
-The last example, `system.file("shapes/world.gpkg", package = "spData")`, returns a path to the `world.gpkg` file, which is stored inside of the `"shapes/"` folder of the **spData** package.
+El último ejemplo, `system.file("shapes/world.gpkg", package = "spData")`, devuelve una ruta al archivo `world.gpkg`, que se almacena dentro de la carpeta `"shapes/"` del paquete **spData**.
 
-\index{geocoding}
-Another way to obtain spatial information is to perform geocoding -- transform a description of a location, usually an address, into its coordinates.
-This is usually done by sending a query to an online service and getting the location as a result.
-Many such services exist that differ in the used method of geocoding, usage limitations, costs, or API key requirements. 
-R has several packages for geocoding; however, **tidygeocoder** seems to allow to connect to [the largest number of geocoding services](https://jessecambon.github.io/tidygeocoder/articles/geocoder_services.html) with a consistent interface.
-The **tidygeocoder** main function is `geocode`, which takes a data frame with addresses and adds coordinates as `"lat"` and `"long"`.
-This function also allows to select a geocoding service with the `method` argument and has many additional parameters.
+Otra forma de obtener información espacial es realizar la geocodificación: transformar la descripción de una ubicación, normalmente una dirección, en sus coordenadas.
+Esto suele hacerse enviando una consulta a un servicio en línea y obteniendo la ubicación como resultado.
+Existen muchos servicios de este tipo que difieren en el método de geocodificación utilizado, las limitaciones de uso, los costes o los requisitos de clave API. 
+R dispone de varios paquetes para geocodificación; sin embargo, **tidygeocoder** parece permitir conectar con [el mayor número de servicios de geocodificación](https://jessecambon.github.io/tidygeocoder/articles/geocoder_services.html) con una interfaz consistente.
+La función principal de **tidygeocoder** es `geocode`, que toma un marco de datos con direcciones y añade coordenadas como `"lat"` y `"long"`.
+Esta función también permite seleccionar un servicio de geocodificación con el argumento `method` y tiene muchos parámetros adicionales.
 
-The example below searches for John Snow blue plaque coordinates located on a building in the Soho district of London.
+El siguiente ejemplo busca las coordenadas de la placa azul de John Snow situada en un edificio del barrio londinense del Soho.
 
 ```{r, eval=FALSE}
 library(tidygeocoder)
@@ -175,25 +152,25 @@ geo_df = geocode(geo_df, address, method = "osm")
 geo_df
 ```
 
-The resulting data frame can be converted into an `sf` object with `st_as_sf()`.
+El data.frame resultante puede convertirse en un objeto `sf` con `st_as_sf()`.
 
 ```{r, eval=FALSE}
 geo_sf = st_as_sf(geo_df, coords = c("long", "lat"), crs = "EPSG:4326")
 ```
 
-This package also allows performing the opposite process called reverse geocoding used to get a set of information (name, address, etc.) based on a pair of coordinates.
+Este paquete también permite realizar el proceso inverso denominado geocodificación inversa utilizado para obtener un conjunto de información (nombre, dirección, etc.) a partir de un par de coordenadas.
 
-## Geographic web services
+## Servicios web geográficos
 
-\index{geographic web services}
-In an effort to standardize web APIs for accessing spatial data, the Open Geospatial Consortium (OGC) has created a number of specifications for web services (collectively known as OWS, which is short for OGC Web Services).
-These specifications include the Web Feature Service (WFS)\index{geographic web services!WFS}, Web Map Service (WMS)\index{geographic web services!WMS}, Web Map Tile Service (WMTS)\index{geographic web services!WMTS}, the Web Coverage Service (WCS)\index{geographic web services!WCS} and even a Web Processing Service (WPS)\index{geographic web services!WPS}.
-Map servers such as PostGIS have adopted these protocols, leading to standardization of queries.
-Like other web APIs, OWS APIs use a 'base URL', an 'endpoint' and 'URL query arguments' following a `?` to request data (see the [`best-practices-api-packages`](https://httr.r-lib.org/articles/api-packages.html) vignette in the **httr** package).
+En un esfuerzo por estandarizar las API web para acceder a los datos espaciales, el Open Geospatial Consortium (OGC) ha creado una serie de especificaciones para los servicios web (conocidos colectivamente como OWS, que es la abreviatura de OGC Web Services).
+Estas especificaciones incluyen el Web Feature Service (WFS), el Web Map Service (WMS), el Web Map Tile Service (WMTS), el Web Coverage Service (WCS) e incluso un Web Processing Service (WPS).
+Servidores de mapas como PostGIS han adoptado estos protocolos, lo que ha llevado a la estandarización de las consultas.
+Al igual que otras API web, las API OWS utilizan una "URL base", un "endpoint" y "argumentos de consulta URL" seguidos de un `?` para solicitar datos (véase la viñeta [`best-practices-api-packages`](https://httr.r-lib.org/articles/api-packages.html) en el paquete **httr**).
 
-There are many requests that can be made to a OWS service.
-One of the most fundamental is `getCapabilities`, demonstrated with **httr** functions `GET()` and `modify_url()` below.
-The code chunk demonstrates how API\index{API} queries can be constructed and dispatched, in this case to discover the capabilities of a service run by the Food and Agriculture Organization of the United Nations (FAO):
+Hay muchas peticiones que se pueden hacer a un servicio OWS.
+Una de las más fundamentales es `getCapabilities`, demostrada con las funciones **httr** `GET()` y `modify_url()` a continuación.
+
+El fragmento de código muestra cómo pueden construirse y enviarse consultas API, en este caso para descubrir las capacidades de un servicio gestionado por la Organización de las Naciones Unidas para la Agricultura y la Alimentación (FAO):
 
 ```{r 07-read-write-plot-8}
 library(httr)
@@ -204,10 +181,9 @@ res = GET(url = modify_url(base_url, path = endpoint), query = q)
 res$url
 ```
 
-The above code chunk demonstrates how API\index{API} requests can be constructed programmatically with the `GET()` function, which takes a base URL and a list of query parameters which can easily be extended.
-The result of the request is saved in `res`, an object of class `response` defined in the **httr** package, which is a list containing information of the request, including the URL.
-As can be seen by executing `browseURL(res$url)`, the results can also be read directly in a browser.
-One way of extracting the contents of the request is as follows:
+El fragmento de código anterior demuestra cómo se pueden construir programáticamente las peticiones API\index{API} con la función `GET()`, que toma una URL base y una lista de parámetros de consulta que pueden ampliarse fácilmente.
+El resultado de la petición se guarda en `res`, un objeto de la clase `response` definido en el paquete **httr**, que es una lista que contiene información de la petición, incluyendo la URL.
+Como puede verse ejecutando `browseURL(res$url)`, los resultados también pueden leerse directamente en un navegador. Una forma de extraer el contenido de la petición es la siguiente:
 
 ```{r 07-read-write-plot-9, eval=FALSE}
 txt = content(res, "text")
@@ -222,7 +198,7 @@ xml
 #> ...
 ```
 
-Data can be downloaded from WFS services with the `GetFeature` request and a specific `typeName` (as illustrated in the code chunk below).
+Los datos pueden descargarse de los servicios WFS con la petición `GetFeature` y un `typeName` específico (como se ilustra en el fragmento de código siguiente).
 
 ```{r 07-read-write-plot-11, echo=FALSE, eval=FALSE}
 library(xml2)
@@ -239,8 +215,8 @@ root[["FeatureTypeList"]][["FeatureType"]][["Name"]]
 tmp = xmlSApply(root[["FeatureTypeList"]], function(x) xmlValue(x[["Name"]]))
 ```
 
-Available names differ depending on the accessed web feature service.
-One can extract them programmatically using web technologies [@nolan_xml_2014] or scrolling manually through the contents of the `GetCapabilities` output in a browser.
+Los nombres disponibles varían en función del servicio de características web al que se acceda.
+Se pueden extraer mediante programación utilizando tecnologías web o desplazándose manualmente por el contenido de la salida `GetCapabilities` en un navegador.
 
 ```{r 07-read-write-plot-12, eval=FALSE}
 qf = list(request = "GetFeature", typeName = "area:FAO_AREAS")
@@ -249,25 +225,23 @@ GET(url = base_url, path = endpoint, query = qf, write_disk(file))
 fao_areas = read_sf(file)
 ```
 
-Note the use of `write_disk()` to ensure that the results are written to disk rather than loaded into memory, allowing them to be imported with **sf**.
-This example shows how to gain low-level access to web services using **httr**, which can be useful for understanding how web services work.
-For many everyday tasks, however, a higher-level interface may be more appropriate, and a number of R packages, and tutorials, have been developed precisely for this purpose.
-The package **ows4R** was developed for working with OWS services.
+Nótese el uso de `write_disk()` para asegurar que los resultados se escriben en disco en lugar de cargarse en memoria, lo que permite importarlos con **sf**.
+Este ejemplo muestra cómo obtener acceso de bajo nivel a servicios web utilizando **httr**, que puede ser útil para entender cómo funcionan los servicios web.
+Para muchas tareas cotidianas, sin embargo, puede ser más apropiada una interfaz de más alto nivel, y se han desarrollado una serie de paquetes de R, y tutoriales, precisamente con este propósito.
+El paquete **ows4R** fue desarrollado para trabajar con servicios OWS.
 
-## File formats
+## Formatos de archivo
 
-\index{file formats}
-Geographic datasets are usually stored as files or in spatial databases.
-File formats can either store vector or raster data, while spatial databases such as [PostGIS](https://postgis.net/) can store both (see also Section \@ref(postgis)).
-Today the variety of file formats may seem bewildering but there has been much consolidation and standardization since the beginnings of GIS software in the 1960s when the first widely distributed program ([SYMAP](https://news.harvard.edu/gazette/story/2011/10/the-invention-of-gis/)) for spatial analysis was created at Harvard University [@coppock_history_1991].
+Los conjuntos de datos geográficos suelen almacenarse como archivos o en bases de datos espaciales.
+Los formatos de archivo pueden almacenar datos vectoriales o ráster, mientras que las bases de datos espaciales como [PostGIS](https://postgis.net/) pueden almacenar ambos.
+Hoy en día, la variedad de formatos de archivo puede parecer desconcertante, pero se ha producido una gran consolidación y estandarización desde los inicios del software SIG en la década de 1960, cuando se creó el primer programa de amplia distribución ([SYMAP](https://news.harvard.edu/gazette/story/2011/10/the-invention-of-gis/)) para el análisis espacial en la Universidad de Harvard.
 
-\index{GDAL}
-GDAL (which should be pronounced "goo-dal", with the double "o" making a reference to object-orientation), the Geospatial Data Abstraction Library, has resolved many issues associated with incompatibility between geographic file formats since its release in 2000.
-GDAL provides a unified and high-performance interface for reading and writing of many raster and vector data formats.^[As we mentioned in Chapter \@ref(geometry-operations), GDAL also contains a set of utility functions allowing for raster mosaicing, resampling, cropping, and reprojecting, etc.]
-Many open and proprietary GIS programs, including GRASS, ArcGIS\index{ArcGIS} and QGIS\index{QGIS}, use GDAL\index{GDAL} behind their GUIs\index{graphical user interface} for doing the legwork of ingesting and spitting out geographic data in appropriate formats.
+GDAL (que debería pronunciarse "goo-dal", con la doble "o" en referencia a la orientación a objetos), la Biblioteca de Abstracción de Datos Geoespaciales, ha resuelto muchos problemas relacionados con la incompatibilidad entre formatos de archivos geográficos desde su lanzamiento en 2000.
+GDAL proporciona una interfaz unificada y de alto rendimiento para la lectura y escritura de muchos formatos de datos ráster y vectoriales.^[GDAL también contiene un conjunto de funciones de utilidad que permiten la creación de mosaicos ráster, el remuestreo, el recorte y la reproyección, etc.].
+Muchos programas SIG abiertos y propietarios, incluidos GRASS GIS, ArcGIS y QGIS, utilizan GDAL detrás de sus interfaces gráficas de usuario para realizar el trabajo de ingesta y escupir los datos geográficos en los formatos adecuados.
 
-GDAL\index{GDAL} provides access to more than 200 vector and raster data formats.
-Table \@ref(tab:formats) presents some basic information about selected and often used spatial file formats.
+GDAL proporciona acceso a más de 200 formatos de datos vectoriales y ráster.
+La siguiente tabla presenta información básica sobre los formatos de archivos espaciales seleccionados y utilizados con frecuencia.
 
 ```{r formats, echo=FALSE}
 file_formats = tibble::tribble(~Name, ~Extension, ~Info, ~Type, ~Model, 
@@ -291,57 +265,51 @@ knitr::kable(file_formats,
   kableExtra::column_spec(5, width = "7em")
 ```
 
-\index{Shapefile}
-\index{GeoPackage}
-An important development ensuring the standardization and open-sourcing of file formats was the founding of the Open Geospatial Consortium ([OGC](http://www.opengeospatial.org/)) in 1994.
-Beyond defining the simple features data model (see Section \@ref(intro-sf)), the OGC also coordinates the development of open standards, for example as used in file formats such as KML\index{KML} and GeoPackage\index{GeoPackage}.
-Open file formats of the kind endorsed by the OGC have several advantages over proprietary formats: the standards are published, ensure transparency and open up the possibility for users to further develop and adjust the file formats to their specific needs.
+La fundación del Open Geospatial Consortium ([OGC](http://www.opengeospatial.org/)) en 1994 supuso un avance importante en la normalización y la apertura de los formatos de archivo.
+Además de definir el modelo de datos de características simples o simple features, el OGC también coordina el desarrollo de normas abiertas, por ejemplo, las utilizadas en formatos de archivo como KML y GeoPackage.
+Los formatos de archivo abiertos del tipo respaldado por el OGC tienen varias ventajas sobre los formatos propietarios: los estándares se publican, garantizan la transparencia y abren la posibilidad de que los usuarios sigan desarrollando y ajustando los formatos de archivo a sus necesidades específicas.
 
-ESRI Shapefile\index{Shapefile} is the most popular vector data exchange format; however, it is not an open format (though its specification is open).
-It was developed in the early 1990s and has a number of limitations.
-First of all, it is a multi-file format, which consists of at least three files.
-It only supports 255 columns, column names are restricted to ten characters and the file size limit is 2 GB.
-Furthermore, ESRI Shapefile\index{Shapefile} does not support all possible geometry types, for example, it is unable to distinguish between a polygon and a multipolygon.^[To learn more about ESRI Shapefile limitations and possible alternative file formats, visit http://switchfromshapefile.org/.]
-Despite these limitations, a viable alternative had been missing for a long time. 
-In the meantime, [GeoPackage](https://www.geopackage.org/)\index{GeoPackage} emerged, and seems to be a more than suitable replacement candidate for ESRI Shapefile.
-Geopackage is a format for exchanging geospatial information and an OGC standard. 
-The GeoPackage standard describes the rules on how to store geospatial information in a tiny SQLite container.
-Hence, GeoPackage is a lightweight spatial database container, which allows the storage of vector and raster data but also of non-spatial data and extensions.
-Aside from GeoPackage, there are other geospatial data exchange formats worth checking out (Table \@ref(tab:formats)).
+ESRI Shapefile es el formato de intercambio de datos vectoriales más popular; sin embargo, no es un formato abierto (aunque su especificación sí lo es).
+Se desarrolló a principios de la década de 1990 y tiene una serie de limitaciones.
+En primer lugar, es un formato multiarchivo, que consta de al menos tres archivos.
+Sólo admite 255 columnas, los nombres de las columnas están restringidos a diez caracteres y el límite de tamaño de los archivos es de 2 GB.
+Además, ESRI Shapefile no admite todos los tipos de geometría posibles, por ejemplo, no es capaz de distinguir entre un polígono y un multipolígono.^[Para obtener más información sobre las limitaciones de ESRI Shapefile y posibles formatos de archivo alternativos, visite <http://switchfromshapefile.org/>.]
+A pesar de estas limitaciones, hacía tiempo que se echaba en falta una alternativa viable. 
+Mientras tanto, surgió [GeoPackage](https://www.geopackage.org/)\index{GeoPackage}, y parece ser un candidato más que adecuado para sustituir a ESRI Shapefile.
+Geopackage es un formato de intercambio de información geoespacial y una norma OGC. 
+La norma GeoPackage describe las reglas para almacenar información geoespacial en un pequeño contenedor SQLite.
+Por lo tanto, GeoPackage es un contenedor de base de datos espacial ligero, que permite almacenar datos vectoriales y ráster, pero también datos no espaciales y extensiones.
+Aparte de GeoPackage, hay otros formatos de intercambio de datos geoespaciales que merece la pena consultar.
 
-\index{GeoTIFF}
-\index{COG}
-The GeoTIFF format seems to be the most prominent raster data format.
-It allows spatial information, such as CRS, to be embedded within a TIFF file. 
-Similar to ESRI Shapefile, this format was firstly developed in the 1990s, but as an open format.
-Additionally, GeoTIFF is still being expanded and improved.
-One of the most significant recent addition to the GeoTIFF format is its variant called [COG](https://www.cogeo.org/) (*Cloud Optimized GeoTIFF*).
-Raster objects saved as COGs can be hosted on HTTP servers, so other people can read only parts of the file without downloading the whole file (see Sections \@ref(raster-data-read) and \@ref(raster-data-write)).
+El formato GeoTIFF parece ser el formato de datos ráster más destacado.
+Permite incrustar información espacial, como CRS, en un archivo TIFF. 
+Al igual que ESRI Shapefile, este formato se desarrolló por primera vez en los años 90, pero como formato abierto.
+Además, GeoTIFF sigue ampliándose y mejorándose.
+Una de las recientes incorporaciones más significativas al formato GeoTIFF es su variante denominada [COG](https://www.cogeo.org/) (*Cloud Optimized GeoTIFF*).
+Los objetos ráster guardados como COG pueden alojarse en servidores HTTP, de modo que otras personas puedan leer sólo partes del archivo sin descargarlo entero.
 
-A plethora of other spatial data formats that we do not explain in detail or mention in Table \@ref(tab:formats) due to the book limits also exists.
-Moreover, new spatial data formats are being developed (e.g., [GeoParquet](https://geoparquet.org/) and [Zarr](https://zarr.dev/)) and existing ones are being improved.
-If you need to learn more about other formats, we encourage you to read the GDAL documentation about [vector](https://gdal.org/drivers/vector/index.html) and [raster](https://gdal.org/drivers/raster/index.html) drivers.
-Additionally, some spatial data formats can store other data models (types) than vector or raster.
-It includes LAS and LAZ formats for storing lidar point clouds, and NetCDF and HDF for storing multidimensional arrays.
+Además, se están desarrollando nuevos formatos de datos espaciales (por ejemplo, [GeoParquet](https://geoparquet.org/) y [Zarr](https://zarr.dev/)) y se están mejorando los existentes.
+Si necesita más información sobre otros formatos, le recomendamos que lea la documentación de GDAL sobre los controladores [vector](https://gdal.org/drivers/vector/index.html) y [raster](https://gdal.org/drivers/raster/index.html).
+Además, algunos formatos de datos espaciales pueden almacenar otros modelos (tipos) de datos que no sean vectoriales o ráster.
+Entre ellos se incluyen los formatos LAS y LAZ para almacenar nubes de puntos lidar, y NetCDF y HDF para almacenar matrices multidimensionales.
 
-Spatial data is also often stored using tabular (non-spatial) text formats, including CSV files or Excel spreadsheets.
-For example, this can be convenient to share spatial samples with people who do not use GIS tools or exchange data with other software that does not accept spatial data formats. 
-However, this approach has several possible issues -- it is fairly challenging for storing geometries more complex than POINTs and does not directly store information about CRS.
+Los datos espaciales también suelen almacenarse en formatos de texto tabulares (no espaciales), como archivos CSV u hojas de cálculo Excel.
+Por ejemplo, esto puede ser conveniente para compartir muestras espaciales con personas que no utilizan herramientas SIG o intercambiar datos con otro software que no acepte formatos de datos espaciales. 
+Sin embargo, este enfoque tiene varios posibles problemas: es bastante complicado para almacenar geometrías más complejas que los POINT y no almacena directamente información sobre los CRS.
 
-## Data input (I) {#data-input}
+## Entrada de datos (I)
 
-Executing commands such as `sf::read_sf()` (the main function we use for loading vector data) or `terra::rast()` (the main function used for loading raster data) silently sets off a chain of events that reads data from files.
-Moreover, there are many R packages containing a wide range of geographic data or providing simple access to different data sources.
-All of them load the data into R or, more precisely, assign objects to your workspace, stored in RAM accessible from the [`.GlobalEnv`](http://adv-r.had.co.nz/Environments.html) of the R session.
+La ejecución de comandos como `sf::read_sf()` (la función principal que utilizamos para cargar datos vectoriales) o `terra::rast()` (la función principal utilizada para cargar datos raster) desencadena silenciosamente una cadena de eventos que lee datos de archivos.
+Además, existen muchos paquetes de R que contienen una amplia gama de datos geográficos o que proporcionan un acceso sencillo a distintas fuentes de datos.
+Todos ellos cargan los datos en R o, más exactamente, asignan objetos a su espacio de trabajo, almacenados en RAM accesible desde el [`.GlobalEnv`](http://adv-r.had.co.nz/Environments.html) de la sesión de R.
 
-### Vector data {#iovec}
+### Vector data
 
-\index{vector!data input}
-Spatial vector data comes in a wide variety of file formats.
-Most popular representations such as `.geojson` and `.gpkg` files can be imported directly into R with the **sf** function `read_sf()` (or the equivalent `st_read()`), which uses [GDAL's vector drivers](https://gdal.org/drivers/vector/index.html)\index{GDAL} behind the scenes.
-`st_drivers()` returns a data frame containing `name` and `long_name` in the first two columns, and features of each driver available to GDAL (and therefore **sf**), including ability to write data and store raster data in the subsequent columns, as illustrated for key file formats in Table \@ref(tab:drivers).  
-The following commands show the first three drivers reported the computer's GDAL installation (results can vary depending on the GDAL version installed) and a summary of the their features.
-Note that the majority of drivers can write data (51 out of 87) while only 16 formats can efficiently represent raster data in addition to vector data (see `?st_drivers()` for details):
+Los datos vectoriales espaciales vienen en una amplia variedad de formatos de archivo.
+Las representaciones más populares, como los archivos `.geojson` y `.gpkg` se pueden importar directamente en R con la función **sf** `read_sf()` (o la equivalente `st_read()`), que utiliza [los controladores vectoriales de GDAL](https://gdal.org/drivers/vector/index.html)\index{GDAL} entre bastidores.
+`st_drivers()` devuelve un marco de datos que contiene `name` y `long_name` en las dos primeras columnas, y las características de cada controlador disponible para GDAL (y por lo tanto **sf**), incluyendo la capacidad de escribir datos y almacenar datos raster en las columnas siguientes, como se ilustra para los formatos de archivo clave en la Tabla \ref(tab:drivers).    
+Los siguientes comandos muestran los tres primeros controladores de los que informa la instalación de GDAL del ordenador (los resultados pueden variar en función de la versión de GDAL instalada) y un resumen de sus características.
+Nótese que la mayoría de los drivers pueden escribir datos (51 de 87) mientras que sólo 16 formatos pueden representar eficientemente datos raster además de datos vectoriales (ver `?st_drivers()` para más detalles):
 
 ```{r 07-read-write-plot-17, eval=FALSE}
 sf_drivers = st_drivers()
@@ -361,43 +329,42 @@ knitr::kable(head(sf_drivers, n = 6),
   kableExtra::column_spec(2, width = "7em")
 ```
 
-The first argument of `read_sf()` is `dsn`, which should be a text string or an object containing a single text string.
-The content of a text string could vary between different drivers.
-In most cases, as with the ESRI Shapefile\index{Shapefile} (`.shp`) or the `GeoPackage`\index{GeoPackage} format (`.gpkg`), the `dsn` would be a file name.
-`read_sf()` guesses the driver based on the file extension, as illustrated for a `.gpkg` file below:
+El primer argumento de `read_sf()` es `dsn`, que debe ser una cadena de texto o un objeto que contenga una única cadena de texto.
+El contenido de una cadena de texto puede variar entre diferentes controladores.
+En la mayoría de los casos, como con el ESRI Shapefile\index{Shapefile} (`.shp`) o el formato `GeoPackage`index{GeoPackage} (`.gpkg`), el `dsn` sería un nombre de archivo.
+`read_sf()` adivina el controlador basado en la extensión del archivo, como se ilustra para un archivo `.gpkg` a continuación:
 
 ```{r 07-read-write-plot-19}
 f = system.file("shapes/world.gpkg", package = "spData")
 world = read_sf(f, quiet = TRUE)
 ```
 
-For some drivers, `dsn` could be provided as a folder name, access credentials for a database, or a GeoJSON string representation (see the examples of the `read_sf()` help page for more details).
+Para algunos controladores, `dsn` podría proporcionarse como un nombre de carpeta, credenciales de acceso a una base de datos, o una representación de cadena GeoJSON (ver los ejemplos de la página de ayuda `read_sf()` para más detalles).
 
-Some vector driver formats can store multiple data layers.
-By default, `read_sf()` automatically reads the first layer of the file specified in `dsn`; however, using the `layer` argument you can specify any other layer.
+Algunos formatos de controladores vectoriales pueden almacenar múltiples capas de datos.
+Por defecto, `read_sf()` lee automáticamente la primera capa del archivo especificado en `dsn`; sin embargo, utilizando el argumento `layer` se puede especificar cualquier otra capa.
 
-\index{OGR SQL}
-The `read_sf()` function also allows for reading just parts of the file into RAM with two possible mechanisms.
-The first one is related to the `query` argument, which allows specifying what part of the data to read with [the OGR SQL query text](https://gdal.org/user/ogr_sql_dialect.html).
-An example below extracts data for Tanzania only (Figure \@ref(fig:readsfquery):A).
-It is done by specifying that we want to get all columns (`SELECT *`) from the `"world"` layer for which the `name_long` equals to `"Tanzania"`:
+La función `read_sf()` también permite leer sólo partes del fichero en la RAM con dos mecanismos posibles.
+El primero está relacionado con el argumento `query`, que permite especificar qué parte de los datos leer con [el texto de consulta OGR SQL](https://gdal.org/user/ogr_sql_dialect.html).
+En el ejemplo siguiente se extraen los datos de Tanzania únicamente.
+Se hace especificando que queremos obtener todas las columnas (`SELECT *`) de la capa `"world"` para las que el `name_long` es igual a `"Tanzania"`:
 
 ```{r}
 tanzania = read_sf(f, query = 'SELECT * FROM world WHERE name_long = "Tanzania"')
 ```
 
-If you do not know the names of the available columns, a good approach is to just read one row of the data with `'SELECT * FROM world WHERE FID = 1'`.
-`FID` represents a *feature ID* -- most often, it is a row number; however, its values depend on the used file format. 
-For example, `FID` starts from 0 in ESRI Shapefile, from 1 in some other file formats, or can be even arbitrary.
+Si no conoce los nombres de las columnas disponibles, un buen método consiste en leer simplemente una fila de los datos con `'SELECT * FROM world WHERE FID = 1'`.
+El `FID` representa un *ID de característica* -- la mayoría de las veces, es un número de fila; sin embargo, sus valores dependen del formato de fichero utilizado. 
+Por ejemplo, `FID` empieza por 0 en ESRI Shapefile, por 1 en algunos otros formatos de archivo, o incluso puede ser arbitrario.
 
 ```{r, eval=FALSE, echo=FALSE}
 read_sf(f, query = 'SELECT * FROM world WHERE FID = 0')
 ```
 
-The second mechanism uses the `wkt_filter` argument.
-This argument expects a well-known text representing study area for which we want to extract the data.
-Let's try it using a small example -- we want to read polygons from our file that intersect with the buffer of 50,000 meters of Tanzania's borders.
-To do it, we need to prepare our "filter" by (a) creating the buffer (Section \@ref(buffers)), (b) converting the `sf` buffer object into an `sfc` geometry object with `st_geometry()`, and (c) translating geometries into their well-known text representation with `st_as_text()`:
+El segundo mecanismo utiliza el argumento `wkt_filter`.
+Este argumento espera un texto conocido que representa el área de estudio de la que queremos extraer los datos.
+Intentémoslo con un pequeño ejemplo: queremos leer los polígonos de nuestro archivo que se cruzan con el buffer de 50.000 metros de las fronteras de Tanzania.
+Para ello, tenemos que preparar nuestro "filtro" (a) creando el buffer, (b) convirtiendo el objeto buffer `sf` en un objeto geométrico `sfc` con `st_geometry()`, y (c) traduciendo las geometrías a su conocida representación de texto con `st_as_text()`:
 
 ```{r}
 tanzania_buf = st_buffer(tanzania, 50000)
@@ -405,13 +372,13 @@ tanzania_buf_geom = st_geometry(tanzania_buf)
 tanzania_buf_wkt = st_as_text(tanzania_buf_geom)
 ```
 
-Now, we can apply this "filter" using the `wkt_filter` argument.
+Ahora, podemos aplicar este "filtro" usando el argumento `wkt_filter`.
 
 ```{r}
 tanzania_neigh = read_sf(f, wkt_filter = tanzania_buf_wkt)
 ```
 
-Our result, shown in Figure \@ref(fig:readsfquery):B, contains Tanzania and every country within its 50 km buffer.
+Nuestro resultado contiene Tanzania y todos los países que se encuentran dentro de su buffer de 50 km.
 
 ```{r readsfquery, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Reading a subset of the vector data using a query (A) and a wkt filter (B)."}
 library(tmap)
@@ -436,14 +403,14 @@ tm2 = tm_shape(tanzania_neigh) +
 tmap_arrange(tm1, tm2)
 ```
 
-Naturally, some options are specific to certain drivers.^[
-A list of supported vector formats and options can be found at http://gdal.org/ogr_formats.html.
+Naturalmente, algunas opciones son específicas de determinados controladores.^[
+Puede encontrar una lista de los formatos vectoriales y opciones compatibles en http://gdal.org/ogr_formats.html.
 ]
-For example, think of coordinates stored in a spreadsheet format (`.csv`).
-To read in such files as spatial objects, we naturally have to specify the names of the columns (`X` and `Y` in our example below) representing the coordinates.
-We can do this with the help of the `options` parameter.
-To find out about possible options, please refer to the 'Open Options' section of the corresponding GDAL\index{GDAL} driver description.
-For the comma-separated value (csv) format, visit http://www.gdal.org/drv_csv.html.
+Por ejemplo, pensemos en coordenadas almacenadas en un formato de hoja de cálculo (`.csv`).
+Para leer estos archivos como objetos espaciales, naturalmente tenemos que especificar los nombres de las columnas (`X` y `Y` en nuestro ejemplo de abajo) que representan las coordenadas.
+Podemos hacerlo con la ayuda del parámetro `options`.
+Para conocer las posibles opciones, consulte la sección `Opciones abiertas` de la descripción del controlador GDAL correspondiente.
+Para el formato de valores separados por comas (csv), visite <http://www.gdal.org/drv_csv.html>.
 
 ```{r 07-read-write-plot-20, results='hide'}
 cycle_hire_txt = system.file("misc/cycle_hire_xy.csv", package = "spData")
@@ -451,10 +418,10 @@ cycle_hire_xy = read_sf(cycle_hire_txt,
   options = c("X_POSSIBLE_NAMES=X", "Y_POSSIBLE_NAMES=Y"))
 ```
 
-Instead of columns describing 'XY' coordinates, a single column can also contain the geometry information.
-Well-known text (WKT)\index{well-known text}, well-known binary (WKB)\index{well-known binary}, and the GeoJSON formats are examples of this.
-For instance, the `world_wkt.csv` file has a column named `WKT` representing polygons of the world's countries.
-We will again use the `options` parameter to indicate this.
+En lugar de columnas que describan las coordenadas "XY", una sola columna puede contener también la información geométrica.
+Los formatos de texto conocido (WKT), binario conocido (WKB) y GeoJSON son ejemplos de ello.
+Por ejemplo, el archivo `world_wkt.csv` tiene una columna llamada `WKT` que representa polígonos de los países del mundo.
+Una vez más, utilizaremos el parámetro `options` para indicarlo.
 
 ```{r results='hide'}
 world_txt = system.file("misc/world_wkt.csv", package = "spData")
@@ -468,19 +435,17 @@ world_wkt2 = st_read(world_txt, options = "GEOM_POSSIBLE_NAMES=WKT",
 identical(world_wkt, world_wkt2)
 ```
 
-```{block2 07-read-write-plot-22, type='rmdnote'}
-Not all of the supported vector file formats store information about their coordinate reference system.
-In these situations, it is possible to add the missing information using the `st_set_crs()` function.
-Please refer also to Section \@ref(crs-intro) for more information.
-```
+:::{.callout-note}
+No todos los formatos de ficheros vectoriales soportados almacenan información sobre su sistema de referencia de coordenadas.
+En estas situaciones, es posible añadir la información que falta utilizando la función `st_set_crs()`.
+:::
 
-\index{KML}
-As a final example, we will show how `read_sf()` also reads KML files.
-A KML file stores geographic information in XML format - a data format for the creation of web pages and the transfer of data in an application-independent way [@nolan_xml_2014].
-Here, we access a KML file from the web.
-This file contains more than one layer.
-`st_layers()` lists all available layers.
-We choose the first layer `Placemarks` and say so with the help of the `layer` parameter in `read_sf()`.
+Como ejemplo final, mostraremos cómo `read_sf()` también lee archivos KML.
+Un archivo KML almacena información geográfica en formato XML, un formato de datos para la creación de páginas web y la transferencia de datos de forma independiente de la aplicación.
+Aquí, accedemos a un archivo KML desde la web.
+Este archivo contiene más de una capa.
+`st_layers()` lista todas las capas disponibles.
+Elegimos la primera capa `Placemarks` y lo decimos con la ayuda del parámetro `layer` en `read_sf()`.
 
 ```{r 07-read-write-plot-23}
 u = "https://developers.google.com/kml/documentation/KML_Samples.kml"
@@ -489,42 +454,38 @@ st_layers("KML_Samples.kml")
 kml = read_sf("KML_Samples.kml", layer = "Placemarks")
 ```
 
-All the examples presented in this section so far have used the **sf** package for geographic data import.
-It is fast and flexible but it may be worth looking at other packages for specific file formats.
-An example is the **geojsonsf** package.
-A [benchmark](https://github.com/ATFutures/geobench) suggests it is around 10 times faster than the **sf** package for reading `.geojson`.
+Todos los ejemplos presentados hasta ahora en esta sección han utilizado el paquete **sf** para la importación de datos geográficos.
+Es rápido y flexible, pero puede merecer la pena buscar otros paquetes para formatos de archivo específicos.
+Un ejemplo es el paquete **geojsonsf**.
+Un [benchmark](https://github.com/ATFutures/geobench) sugiere que es unas 10 veces más rápido que el paquete **sf** para leer `.geojson`.
 
 ```{r, echo=FALSE, results='hide'}
 file.remove("KML_Samples.kml")
 ```
 
-### Raster data {#raster-data-read}
+### Datos raster
 
-\index{raster!data input}
-Similar to vector data, raster data comes in many file formats with some of them supporting multilayer files.
-**terra**'s `rast()` command reads in a single layer when a file with just one layer is provided.
+Al igual que los datos vectoriales, los datos raster vienen en muchos formatos de archivo, algunos de los cuales soportan archivos multicapa.
+El comando `rast()` de **terra** lee una sola capa cuando se proporciona un archivo con una sola capa.
 
 ```{r 07-read-write-plot-24, message=FALSE}
 raster_filepath = system.file("raster/srtm.tif", package = "spDataLarge")
 single_layer = rast(raster_filepath)
 ```
 
-It also works in case you want to read a multilayer file.
+También funciona en caso de que quieras leer un fichero multicapa.
 
 ```{r 07-read-write-plot-25}
 multilayer_filepath = system.file("raster/landsat.tif", package = "spDataLarge")
 multilayer_rast = rast(multilayer_filepath)
 ```
 
-\index{vsicurl}
-\index{GDAL}
-\index{COG}
-All of the previous examples read spatial information from files stored on your hard drive. 
-However, GDAL also allows reading data directly from online resources, such as HTTP/HTTPS/FTP web resources.
-The only thing we need to do is to add a `/vsicurl/` prefix before the path to the file.
-Let's try it by connecting to the global monthly snow probability at 500 m resolution for the period 2000-2012 [@hengl_t_2021_5774954].
-Snow probability for December is stored as a Cloud Optimized GeoTIFF (COG) file (see Section \@ref(file-formats)) at \url{https://zenodo.org/record/5774954/files/clm_snow.prob_esacci.dec_p.90_500m_s0..0cm_2000..2012_v2.0.tif}.
-To read an online file, we just need to provide its URL together with the `/vsicurl/` prefix.
+Todos los ejemplos anteriores leen información espacial de archivos almacenados en su disco duro. 
+Sin embargo, GDAL también permite leer datos directamente de recursos en línea, como recursos web HTTP/HTTPS/FTP.
+Lo único que tenemos que hacer es añadir un prefijo `/vsicurl/` antes de la ruta al fichero.
+Vamos a probarlo conectándonos a la probabilidad de nieve mensual global a 500 m de resolución para el periodo 2000-2012.
+La probabilidad de nieve para diciembre se almacena como archivo COG (Cloud Optimized GeoTIFF) en \url{https://zenodo.org/record/5774954/files/clm_snow.prob_esacci.dec_p.90_500m_s0..0cm_2000..2012_v2.0.tif}.
+Para leer un archivo en línea, basta con proporcionar su URL junto con el prefijo `/vsicurl/`.
 
 ```{r}
 myurl = "/vsicurl/https://zenodo.org/record/5774954/files/clm_snow.prob_esacci.dec_p.90_500m_s0..0cm_2000..2012_v2.0.tif"
@@ -532,10 +493,10 @@ snow = rast(myurl)
 snow
 ```
 
-Due to the fact that the input data is COG, we are actually not reading this file to our RAM, but rather creating a connection to it without obtaining any values.
-Its values will be read if we apply any value-based operation (e.g., `crop()` or `extract()`).
-This allows us also to just read a tiny portion of the data without downloading the entire file.
-For example, we can get the snow probability for December in Reykjavik (70%) by specifying its coordinates and applying the `extract()` function:
+Debido a que los datos de entrada son COG, en realidad no estamos leyendo este fichero en nuestra RAM, sino creando una conexión con él sin obtener ningún valor.
+Sus valores serán leídos si aplicamos cualquier operación basada en valores (por ejemplo, `crop()` o `extract()`).
+Esto nos permite también leer sólo una pequeña porción de los datos sin descargar todo el fichero.
+Por ejemplo, podemos obtener la probabilidad de nieve para diciembre en Reikiavik (70%) especificando sus coordenadas y aplicando la función `extract()`:
 
 ```{r}
 rey = data.frame(lon = -21.94, lat = 64.15)
@@ -543,65 +504,60 @@ snow_rey = extract(snow, rey)
 snow_rey
 ```
 
-This way, we just downloaded a single value instead of the whole, large GeoTIFF file.
+De esta forma, sólo descargamos un único valor en lugar de todo el archivo GeoTIFF de gran tamaño.
 
-The above example just shows one simple (but useful) case, but there is more to explore.
-The `/vsicurl/` prefix also works not only for raster but also for vector file formats.
-It allows reading vectors directly from online storage with `read_sf()` just by adding the prefix before the vector file URL.
+El ejemplo anterior sólo muestra un caso sencillo (pero útil), pero hay más por explorar.
+El prefijo `/vsicurl/` también funciona no sólo para los formatos de archivo raster, sino también para los vectoriales.
+Permite leer vectores directamente desde el almacenamiento en línea con `read_sf()` simplemente añadiendo el prefijo antes de la URL del archivo vectorial.
 
-Importantly, `/vsicurl/` is not the only prefix provided by GDAL -- many more exist, such as `/vsizip/` to read spatial files from ZIP archives without decompressing them beforehand or `/vsis3/` for on-the-fly reading files available in AWS S3 buckets.
-You can learn more about it at https://gdal.org/user/virtual_file_systems.html.
+Es importante destacar que `/vsicurl/` no es el único prefijo proporcionado por GDAL; existen muchos más, como `/vsizip/` para leer archivos espaciales de archivos ZIP sin descomprimirlos previamente o `/vsis3/` para leer sobre la marcha archivos disponibles en cubos S3 de AWS.
+Puede obtener más información en <https://gdal.org/user/virtual_file_systems.html>.
 
-<!-- ### Databases -->
-<!-- jn:toDo-->
-<!-- postgis input example -->
+## Salida de datos (O) 
 
-## Data output (O) {#data-output}
-
-Writing geographic data allows you to convert from one format to another and to save newly created objects.
-Depending on the data type (vector or raster), object class (e.g., `sf` or `SpatRaster`), and type and amount of stored information (e.g., object size, range of values), it is important to know how to store spatial files in the most efficient way.
-The next two sections will demonstrate how to do this.
+La escritura de datos geográficos permite convertir de un formato a otro y guardar objetos recién creados.
+Dependiendo del tipo de datos (vector o raster), clase de objeto (por ejemplo, `sf` o `SpatRaster`), y tipo y cantidad de información almacenada (por ejemplo, tamaño del objeto, rango de valores), es importante saber cómo almacenar archivos espaciales de la manera más eficiente.
+En las dos secciones siguientes se muestra cómo hacerlo.
 
 ### Vector data
 
-\index{vector!data output}
 ```{r 07-read-write-plot-27, echo=FALSE, results='hide'}
 world_files = list.files(pattern = "world*")
 file.remove(world_files)
 ```
 
-The counterpart of `read_sf()` is `write_sf()`.
-It allows you to write **sf** objects to a wide range of geographic vector file formats, including the most common such as `.geojson`, `.shp` and `.gpkg`.
-Based on the file name, `write_sf()` decides automatically which driver to use. 
-The speed of the writing process depends also on the driver.
+La contrapartida de `read_sf()` es `write_sf()`.
+Permite escribir objetos **sf** en una amplia gama de formatos de archivos vectoriales geográficos, incluidos los más comunes como `.geojson`, `.shp` y `.gpkg`.
+Basándose en el nombre del archivo, `write_sf()` decide automáticamente qué controlador utilizar. 
+La velocidad del proceso de escritura depende también del controlador.
 
 ```{r 07-read-write-plot-28}
 write_sf(obj = world, dsn = "world.gpkg")
 ```
 
-**Note**: if you try to write to the same data source again, the function will overwrite the file:
+**Nota**: si intentas escribir de nuevo en la misma fuente de datos, la función sobrescribirá el fichero:
 
 ```{r 07-read-write-plot-29, error=TRUE}
 write_sf(obj = world, dsn = "world.gpkg")
 ```
 
-Instead of overwriting the file, we could add a new layer to the file with `append = TRUE`, which is supported by several spatial formats, including GeoPackage.
+En lugar de sobrescribir el archivo, podríamos añadir una nueva capa al archivo con `append = TRUE`, que es soportado por varios formatos espaciales, incluyendo GeoPackage.
 
 ```{r 07-read-write-plot-31, results='hide'}
 write_sf(obj = world, dsn = "world_many_layers.gpkg", append = TRUE)
 ```
 
-Alternatively, you can use `st_write()` since it is equivalent to `write_sf()`.
-However, it has different defaults -- it does not overwrite files (returns an error when you try to do it) and shows a short summary of the written file format and the object.
+Alternativamente, puede usar `st_write()` ya que es equivalente a `write_sf()`.
+Sin embargo, tiene diferentes valores por defecto -- no sobrescribe archivos (devuelve un error cuando intenta hacerlo) y muestra un breve resumen del formato del archivo escrito y el objeto.
 
 ```{r 07-read-write-plot-32}
 st_write(obj = world, dsn = "world2.gpkg")
 ```
 
-The `layer_options` argument could be also used for many different purposes.
-One of them is to write spatial data to a text file.
-This can be done by specifying `GEOMETRY` inside of `layer_options`. 
-It could be either `AS_XY` for simple point datasets (it creates two new columns for coordinates) or `AS_WKT` for more complex spatial data (one new column is created which contains the well-known text representation of spatial objects).
+El argumento `layer_options` también se puede utilizar para muchos propósitos diferentes.
+Uno de ellos es escribir datos espaciales en un fichero de texto.
+Esto puede hacerse especificando `GEOMETRY` dentro de `layer_options`. 
+Puede ser `AS_XY` para conjuntos de datos de puntos simples (crea dos nuevas columnas para las coordenadas) o `AS_WKT` para datos espaciales más complejos (se crea una nueva columna que contiene la conocida representación textual de los objetos espaciales).
 
 ```{r 07-read-write-plot-33, eval=FALSE}
 write_sf(cycle_hire_xy, "cycle_hire_xy.csv", layer_options = "GEOMETRY=AS_XY")
@@ -612,23 +568,21 @@ write_sf(world_wkt, "world_wkt.csv", layer_options = "GEOMETRY=AS_WKT")
 file.remove(world_files)
 ```
 
-### Raster data {#raster-data-write}
+### Datos Raster {#raster-data-write}
 
-\index{raster!data output}
-The `writeRaster()` function saves `SpatRaster` objects to files on disk. 
-The function expects input regarding output data type and file format, but also accepts GDAL options specific to a selected file format (see `?writeRaster` for more details).
+La función `writeRaster()` guarda objetos `SpatRaster` en archivos de disco. 
+La función espera información sobre el tipo de datos de salida y el formato de archivo, pero también acepta opciones de GDAL específicas para el formato de archivo seleccionado (véase `?writeRaster` para más detalles).
 
-\index{raster!data types}
-The **terra** package offers seven data types when saving a raster: INT1U, INT2S, INT2U, INT4S, INT4U, FLT4S, and FLT8S.^[
-Using INT4U is not recommended as R does not support 32-bit unsigned integers.
+El paquete **terra** ofrece siete tipos de datos a la hora de guardar una trama: INT1U, INT2S, INT2U, INT4S, INT4U, FLT4S, y FLT8S.^[
+No se recomienda usar INT4U ya que R no soporta enteros sin signo de 32 bits.
 ]
-The data type determines the bit representation of the raster object written to disk (Table \@ref(tab:datatypes)).
-Which data type to use depends on the range of the values of your raster object.
-The more values a data type can represent, the larger the file will get on disk.
-Unsigned integers (INT1U, INT2U, INT4U) are suitable for categorical data, while float numbers (FLT4S and FLT8S) usually represent continuous data.
-`writeRaster()` uses FLT4S as the default.
-While this works in most cases, the size of the output file will be unnecessarily large if you save binary or categorical data.
-Therefore, we would recommend to use the data type that needs the least storage space, but is still able to represent all values (check the range of values with the `summary()` function).
+El tipo de datos determina la representación en bits del objeto ráster escrito en el disco.
+El tipo de datos a utilizar depende del rango de valores del objeto raster.
+Cuantos más valores pueda representar un tipo de datos, más grande será el archivo en disco.
+Los enteros sin signo (INT1U, INT2U, INT4U) son adecuados para datos categóricos, mientras que los números flotantes (FLT4S y FLT8S) suelen representar datos continuos.
+`writeRaster()` utiliza FLT4S por defecto.
+Aunque esto funciona en la mayoría de los casos, el tamaño del fichero de salida será innecesariamente grande si guarda datos binarios o categóricos.
+Por lo tanto, recomendamos utilizar el tipo de datos que necesite menos espacio de almacenamiento, pero que sea capaz de representar todos los valores (compruebe el rango de valores con la función `summary()`).
 
 ```{r datatypes, echo=FALSE}
 dT = tibble::tribble(
@@ -646,48 +600,46 @@ knitr::kable(dT, caption = "Data types supported by the terra package.",
              booktabs = TRUE)
 ```
 
-By default, the output file format is derived from the filename.
-Naming a file `*.tif` will create a GeoTIFF file, as demonstrated below:
+Por defecto, el formato del archivo de salida se deriva del nombre del archivo.
+Al nombrar un archivo `*.tif` se creará un archivo GeoTIFF, como se muestra a continuación:
 
 ```{r eval=FALSE}
 writeRaster(single_layer, filename = "my_raster.tif", datatype = "INT2U")
 ```
 
-Some raster file formats have additional options, that can be set by providing [GDAL parameters](http://www.gdal.org/formats_list.html) to the `options` argument of `writeRaster()`.
-GeoTIFF files are written in **terra**, by default, with the LZW compression `gdal = c("COMPRESS=LZW")`.
-To change or disable the compression, we need to modify this argument.
+Algunos formatos de archivo ráster tienen opciones adicionales, que pueden establecerse proporcionando [parámetros GDAL](http://www.gdal.org/formats_list.html) al argumento `options` de `writeRaster()`.
+Los archivos GeoTIFF se escriben en **terra**, por defecto, con la compresión LZW `gdal = c("COMPRESS=LZW")`.
+Para cambiar o desactivar la compresión, necesitamos modificar este argumento.
 
 ```{r eval=FALSE}
 writeRaster(x = single_layer, filename = "my_raster.tif",
             gdal = c("COMPRESS=NONE"), overwrite = TRUE)
 ```
 
-Additionally, we can save our raster object as COG (*Cloud Optimized GeoTIFF*, Section \@ref(file-formats)) with the `filetype = "COG"` options.
+Además, podemos guardar nuestro objeto raster como COG (*Cloud Optimized GeoTIFF*) con las opciones `filetype = "COG"`.
 
 ```{r eval=FALSE}
 writeRaster(x = single_layer, filename = "my_raster.tif",
             filetype = "COG", overwrite = TRUE)
 ```
 
-## Visual outputs
+## Resultados visuales
 
-\index{map making!outputs}
-R supports many different static and interactive graphics formats.
-The most general method to save a static plot is to open a graphic device, create a plot, and close it, for example:
+R soporta muchos formatos diferentes de gráficos estáticos e interactivos.
+El método más general para guardar un gráfico estático es abrir un dispositivo gráfico, crear un gráfico y cerrarlo, por ejemplo:
 
 ```{r eval=FALSE}
 png(filename = "lifeExp.png", width = 500, height = 350)
-plot(world["lifeExp"])
+plot( world["lifeExp"])
 dev.off()
 ```
 
-Other available graphic devices include `pdf()`, `bmp()`, `jpeg()`, and `tiff()`. 
-You can specify several properties of the output plot, including width, height and resolution.
+Otros dispositivos gráficos disponibles son `pdf()`, `bmp()`, `jpeg()` y `tiff()`. 
+Puede especificar varias propiedades del gráfico de salida, como la anchura, la altura y la resolución.
 
-\index{tmap (package)!saving maps}
-Additionally, several graphic packages provide their own functions to save a graphical output.
-For example, the **tmap** package has the `tmap_save()` function.
-You can save a `tmap` object to different graphic formats or an HTML file by specifying the object name and a file path to a new file.
+Además, varios paquetes gráficos proporcionan sus propias funciones para guardar una salida gráfica.
+Por ejemplo, el paquete **tmap** tiene la función `tmap_save()`.
+Puede guardar un objeto `tmap` en diferentes formatos gráficos o en un archivo HTML especificando el nombre del objeto y una ruta a un nuevo archivo.
 
 ```{r eval=FALSE}
 library(tmap)
@@ -695,7 +647,7 @@ tmap_obj = tm_shape(world) + tm_polygons(col = "lifeExp")
 tmap_save(tmap_obj, filename = "lifeExp_tmap.png")
 ```
 
-On the other hand, you can save interactive maps created in the **mapview** package as an HTML file or image using the `mapshot()` function:
+Por otra parte, puede guardar los mapas interactivos creados en el paquete **mapview** como un archivo HTML o una imagen utilizando la función `mapshot()`:
 
 ```{r eval=FALSE}
 library(mapview)
