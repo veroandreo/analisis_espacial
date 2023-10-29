@@ -1,0 +1,34 @@
+---
+title: "Análisis Espacial"
+subtitle: "Curso de Postgrado"
+date: today
+toc: true
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+![](./logos_institucionales.png){width=80% fig-align="center"}
+
+Resumen TBD
+
+# Objetivos
+
+<u>General:</u>
+
+-  bla
+
+<u>Específicos:</u>
+
+- bla
+- bla
+
+
+# Contenidos
+
+-   **Unidad 1.**
+-   **Unidad 2.**
+-   **Unidad 3.** 
+-   **Unidad 4.**
+-   **Unidad 5.** 
+

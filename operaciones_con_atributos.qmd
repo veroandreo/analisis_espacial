@@ -439,7 +439,7 @@ p1 = tm_shape(elev) +
   tm_legend()
 
 p2 = tm_shape(grain) + 
-  tm_raster(palette = colfunc2) +
+  tm_raster(col = colfunc2) +
   tm_legend()
 tmap_arrange(p1, p2, nrow = 1)
 ```
