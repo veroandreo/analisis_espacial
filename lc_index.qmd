@@ -3,23 +3,16 @@ title: "Lectura complementaria"
 format: html
 ---
 
-## Quarto
+El material que se presenta en esta sección fue traducido y recortado del
+libro ["Geocomputation with R"](https://r.geocompx.org/) de Robin Lovelace, 
+Jakub Nowosad y Jannes Muenchow.
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
 
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this 
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
+- [Datos espaciales en R](datos_espaciales_en_R.qmd)
+- [Operaciones con atributos](operaciones_con_atributos.qmd)
+- [Operaciones espaciales](operaciones_espaciales.qmd)
+- [Operaciones con geometrías](operaciones_geometricas.qmd)
+- [Interacción raster-vector](interaccion_raster_vector.qmd)
+- [Reproyección de datos espaciales](reproyeccion.qmd)
+- [Entrada y salida de datos espaciales](geo_input_output.qmd)
+- [Haciendo mapas en R](haciendo_mapas_en_r.qmd)
