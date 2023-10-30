@@ -10,25 +10,18 @@ editor:
 
 ![](./logos_institucionales.png){width=80% fig-align="center"}
 
-Resumen TBD
+- [Presentación](introduccion_r_espacial.qmd)
 
-# Objetivos
-
-<u>General:</u>
-
--  bla
-
-<u>Específicos:</u>
-
-- bla
-- bla
+El material que se presenta a continuacoión fue traducido y recortado del
+libro ["Geocomputation with R"](https://r.geocompx.org/) de Robin Lovelace, 
+Jakub Nowosad y Jannes Muenchow.
 
 
-# Contenidos
-
--   **Unidad 1.**
--   **Unidad 2.**
--   **Unidad 3.** 
--   **Unidad 4.**
--   **Unidad 5.** 
-
+- [Datos espaciales en R](datos_espaciales_en_R.qmd)
+- [Operaciones con atributos](operaciones_con_atributos.qmd)
+- [Operaciones espaciales](operaciones_espaciales.qmd)
+- [Operaciones con geometrías](operaciones_geometricas.qmd)
+- [Interacción raster-vector](interaccion_raster_vector.qmd)
+- [Reproyección de datos espaciales](reproyeccion.qmd)
+- [Entrada y salida de datos espaciales](geo_input_output.qmd)
+- [Haciendo mapas en R](haciendo_mapas_en_r.qmd)

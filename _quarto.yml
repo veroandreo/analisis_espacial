@@ -14,8 +14,8 @@ website:
         aria-label: github
         href: https://github.com/veroandreo/analisis_espacial
     left:
-      # - text: Presentación 1
-      #   href: aca presentacion pablo
+      - text: Presentación
+        href: introduccion_r_espacial.qmd
       - text: Lectura complementaria
         href: lc_index.qmd
       - menu:
