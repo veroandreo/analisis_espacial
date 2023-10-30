@@ -542,8 +542,8 @@ Pablo Paccioretti
 <span id="cb1-2"><a href="#cb1-2"></a>normalAleatorio <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">10</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
 <span id="cb1-3"><a href="#cb1-3"></a>normalAleatorio</span>
 <span id="cb1-4"><a href="#cb1-4"></a><span class="do">## [1] 4</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="do">##  [1]  0.9577939 -1.0366339  0.1622043  0.7847852  1.5018224 -0.6121518</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="do">##  [7] -0.1540445 -1.3424561 -0.3117655  1.2872664</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="do">##  [1]  0.8062882 -1.0131626 -0.4134940 -1.0472152 -0.5672522 -1.2302326</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="do">##  [7] -1.6669235 -0.6910499  0.6807653 -0.9641593</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section></section>
 <section>
@@ -2503,16 +2503,15 @@ Pablo Paccioretti
 <div class="column">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a><span class="fu">tmap_mode</span>(<span class="st">"view"</span>)</span>
 <span id="cb53-2"><a href="#cb53-2"></a><span class="fu">tm_shape</span>(cuencasUTM) <span class="sc">+</span></span>
-<span id="cb53-3"><a href="#cb53-3"></a>  <span class="fu">tm_fill</span>(<span class="st">"MediaLimo"</span>, </span>
-<span id="cb53-4"><a href="#cb53-4"></a>          <span class="at">style =</span> <span class="st">"quantile"</span>, </span>
-<span id="cb53-5"><a href="#cb53-5"></a>          <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb53-3"><a href="#cb53-3"></a>  <span class="fu">tm_fill</span>(<span class="st">"MediaLimo"</span>,</span>
+<span id="cb53-4"><a href="#cb53-4"></a>          <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(<span class="at">style =</span> <span class="st">'quantile'</span>),</span>
+<span id="cb53-5"><a href="#cb53-5"></a>          <span class="at">fill_alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
 <span id="cb53-6"><a href="#cb53-6"></a>  <span class="fu">tm_borders</span>() <span class="sc">+</span></span>
-<span id="cb53-7"><a href="#cb53-7"></a>  <span class="fu">tm_basemap</span>(<span class="fu">c</span>(</span>
-<span id="cb53-8"><a href="#cb53-8"></a>    <span class="st">"Stamen.Watercolor"</span>,</span>
-<span id="cb53-9"><a href="#cb53-9"></a>    <span class="st">"Esri"</span>,</span>
-<span id="cb53-10"><a href="#cb53-10"></a>    <span class="st">"OpenTopoMap"</span>,</span>
-<span id="cb53-11"><a href="#cb53-11"></a>    <span class="st">"Stamen.Terrain"</span>)) </span>
-<span id="cb53-12"><a href="#cb53-12"></a><span class="co"># names(leaflet::providers)</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb53-7"><a href="#cb53-7"></a>  <span class="fu">tm_basemap</span>(<span class="fu">c</span>(<span class="st">"Stadia.Stamen.Watercolor"</span>,</span>
+<span id="cb53-8"><a href="#cb53-8"></a>               <span class="st">"Esri"</span>,</span>
+<span id="cb53-9"><a href="#cb53-9"></a>               <span class="st">"OpenTopoMap"</span>,</span>
+<span id="cb53-10"><a href="#cb53-10"></a>               <span class="st">"Stamen.Terrain"</span>))</span>
+<span id="cb53-11"><a href="#cb53-11"></a><span class="co"># names(leaflet::providers)</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 
 </div>
@@ -2524,19 +2523,19 @@ Pablo Paccioretti
 <div class="column">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
 <span id="cb54-2"><a href="#cb54-2"></a>cuencas_tmap <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(cuencasUTM) <span class="sc">+</span></span>
-<span id="cb54-3"><a href="#cb54-3"></a>  <span class="fu">tm_fill</span>(<span class="st">"MediaLimo"</span>, </span>
-<span id="cb54-4"><a href="#cb54-4"></a>          <span class="at">style =</span> <span class="st">"cont"</span>, </span>
-<span id="cb54-5"><a href="#cb54-5"></a>          <span class="co"># palette = c("red", "blue"),</span></span>
-<span id="cb54-6"><a href="#cb54-6"></a>          <span class="at">textNA =</span> <span class="st">"Sin Datos"</span>,</span>
-<span id="cb54-7"><a href="#cb54-7"></a>          <span class="at">title.size =</span> <span class="st">"Media Limo"</span>) <span class="sc">+</span></span>
-<span id="cb54-8"><a href="#cb54-8"></a>  <span class="fu">tm_borders</span>() <span class="sc">+</span></span>
-<span id="cb54-9"><a href="#cb54-9"></a>  <span class="fu">tm_legend</span>(</span>
-<span id="cb54-10"><a href="#cb54-10"></a>    <span class="at">text.size=</span><span class="dv">1</span>,</span>
-<span id="cb54-11"><a href="#cb54-11"></a>    <span class="at">title.size=</span><span class="fl">1.2</span>,</span>
-<span id="cb54-12"><a href="#cb54-12"></a>    <span class="at">legend.outside=</span><span class="cn">TRUE</span>,</span>
-<span id="cb54-13"><a href="#cb54-13"></a>    <span class="at">frame=</span><span class="st">"gray50"</span>,</span>
-<span id="cb54-14"><a href="#cb54-14"></a>    <span class="at">height=</span>.<span class="dv">6</span>)</span>
-<span id="cb54-15"><a href="#cb54-15"></a>cuencas_tmap <span class="co">#&lt;&lt;</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb54-3"><a href="#cb54-3"></a>  <span class="fu">tm_fill</span>(</span>
+<span id="cb54-4"><a href="#cb54-4"></a>    <span class="at">fill =</span> <span class="st">"MediaLimo"</span>,</span>
+<span id="cb54-5"><a href="#cb54-5"></a>    <span class="at">fill.scale =</span> <span class="fu">tm_scale_continuous</span>(),</span>
+<span id="cb54-6"><a href="#cb54-6"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(</span>
+<span id="cb54-7"><a href="#cb54-7"></a>      <span class="at">title =</span> <span class="st">'Media Limo'</span>,</span>
+<span id="cb54-8"><a href="#cb54-8"></a>      <span class="at">text.size =</span> <span class="dv">20</span>,</span>
+<span id="cb54-9"><a href="#cb54-9"></a>      <span class="at">title.size =</span> <span class="dv">23</span>,</span>
+<span id="cb54-10"><a href="#cb54-10"></a>      <span class="at">legend.outside =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb54-11"><a href="#cb54-11"></a>      <span class="at">frame =</span> <span class="st">"gray50"</span></span>
+<span id="cb54-12"><a href="#cb54-12"></a>    )</span>
+<span id="cb54-13"><a href="#cb54-13"></a>  ) <span class="sc">+</span></span>
+<span id="cb54-14"><a href="#cb54-14"></a>  <span class="fu">tm_borders</span>()</span>
+<span id="cb54-15"><a href="#cb54-15"></a>cuencas_tmap</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <p><img data-src="introduccion_r_espacial_files/figure-revealjs/tmap-cuencasUTMPllette-1.png" width="960"></p>
@@ -2555,7 +2554,7 @@ Pablo Paccioretti
 <span id="cb55-5"><a href="#cb55-5"></a>  <span class="fu">tm_layout</span>(<span class="at">legend.format =</span> <span class="fu">list</span>(<span class="at">text.separator=</span> <span class="st">" a "</span>),</span>
 <span id="cb55-6"><a href="#cb55-6"></a>            <span class="at">legend.outside =</span> <span class="cn">TRUE</span>,</span>
 <span id="cb55-7"><a href="#cb55-7"></a>            <span class="at">legend.hist.width =</span> <span class="fl">2.5</span>)</span>
-<span id="cb55-8"><a href="#cb55-8"></a>muestreo_tmap <span class="co">#&lt;&lt;</span></span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb55-8"><a href="#cb55-8"></a>muestreo_tmap</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <p><img data-src="introduccion_r_espacial_files/figure-revealjs/tmap-muestreoNA-1.png" width="960"></p>

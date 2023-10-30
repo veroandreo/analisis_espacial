@@ -44,17 +44,11 @@ editor_options:
 ```{r setup, include=FALSE, purl = FALSE}
 library(sf)
 library(ggplot2)
-# library(ggmap)
-# library(prettymapr)
-# library(units)
+library(units)
+# install.packages('remotes')
+# remotes::install_github("r-tmap/tmaptools")
+# remotes::install_github("r-tmap/tmap")
 library(tmap)
-# library(leaflet)
-# library(leafem)
-# library(ggspatial)
-
-# options(width = 80, scipen = 99, sf_max_print = 3)
-# options(htmltools.dir.version = FALSE)
-# 
 ```
 
 
@@ -836,15 +830,14 @@ tm_shape(cuencasUTM) +
 #| 
 tmap_mode("view")
 tm_shape(cuencasUTM) +
-  tm_fill("MediaLimo", 
-          style = "quantile", 
-          alpha = 0.8) +
+  tm_fill("MediaLimo",
+          fill.scale = tm_scale_intervals(style = 'quantile'),
+          fill_alpha = 0.8) +
   tm_borders() +
-  tm_basemap(c(
-    "Stamen.Watercolor",
-    "Esri",
-    "OpenTopoMap",
-    "Stamen.Terrain")) 
+  tm_basemap(c("Stadia.Stamen.Watercolor",
+               "Esri",
+               "OpenTopoMap",
+               "Stamen.Terrain"))
 # names(leaflet::providers)
 ```
 
@@ -859,19 +852,19 @@ tm_shape(cuencasUTM) +
 #| 
 tmap_mode("plot")
 cuencas_tmap <- tm_shape(cuencasUTM) +
-  tm_fill("MediaLimo", 
-          style = "cont", 
-          # palette = c("red", "blue"),
-          textNA = "Sin Datos",
-          title.size = "Media Limo") +
-  tm_borders() +
-  tm_legend(
-    text.size=1,
-    title.size=1.2,
-    legend.outside=TRUE,
-    frame="gray50",
-    height=.6)
-cuencas_tmap #<<
+  tm_fill(
+    fill = "MediaLimo",
+    fill.scale = tm_scale_continuous(),
+    fill.legend = tm_legend(
+      title = 'Media Limo',
+      text.size = 20,
+      title.size = 23,
+      legend.outside = TRUE,
+      frame = "gray50"
+    )
+  ) +
+  tm_borders()
+cuencas_tmap
 
 ```
 
@@ -890,7 +883,7 @@ muestreo_tmap <- tm_shape(muestreo) +
   tm_layout(legend.format = list(text.separator= " a "),
             legend.outside = TRUE,
             legend.hist.width = 2.5)
-muestreo_tmap #<<
+muestreo_tmap
 
 ```
 
