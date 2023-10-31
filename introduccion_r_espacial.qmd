@@ -10,13 +10,12 @@ format:
       fig-align: center
       hash-type: number 
       slide-number: true
-      chalkboard: 
-        buttons: true
       preview-links: auto
       logo: "assets/img/logos_para_fondo_oscuro.png"
-      theme: [default, assets/css/gulich.scss]
       filters: 
         - "assets/output-line-highlight.lua"
+      theme: [default, assets/css/gulich.scss]
+      self-contained: true
 author: 
   - name:
       given: Verónica

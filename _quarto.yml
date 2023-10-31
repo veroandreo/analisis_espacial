@@ -1,5 +1,5 @@
 project:
-  type: website
+  type: site
   output-dir: docs
 
 lang: es
@@ -15,7 +15,7 @@ website:
         href: https://github.com/veroandreo/analisis_espacial
     left:
       - text: Presentación
-        href: introduccion_r_espacial.qmd
+        href: slidespage.qmd
       - text: Lectura complementaria
         href: lc_index.qmd
       - menu:
@@ -45,11 +45,11 @@ knitr:
     comment: "##"
     results: "hold"
 
-format: 
+format:
   html:
     theme: 
       light: flatly
-      dark: darkly    
+      dark: darkly
     code-link: true
     code-fold: false
     code-tools: 

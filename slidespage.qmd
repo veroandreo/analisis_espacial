@@ -1,0 +1,8 @@
+:::{.column-page}
+## Slides
+```{=html}
+<iframe class="slide-deck", style="width:100%;height:600px; border:1px solid gray;" src="introduccion_r_espacial.html"></iframe>
+```
+
+[Mostrar en una nueva pestaña](introduccion_r_espacial.html){target="_blank"}
+:::

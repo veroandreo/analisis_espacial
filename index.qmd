@@ -10,7 +10,7 @@ editor:
 
 ![](./logos_institucionales.png){width=80% fig-align="center"}
 
-- [Presentación](introduccion_r_espacial.qmd)
+- [Presentación](slidespage.qmd)
 
 El material que se presenta a continuacoión fue traducido y recortado del
 libro ["Geocomputation with R"](https://r.geocompx.org/) de Robin Lovelace, 
