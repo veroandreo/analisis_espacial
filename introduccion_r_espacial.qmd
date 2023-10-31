@@ -1,0 +1,1017 @@
+---
+title: "Datos Espaciales en R"
+subtitle: "Análisis espacial"
+bibliography: assets/biblio.bib
+format: 
+    revealjs:
+      echo: true
+      cache: false
+      center: true
+      fig-align: center
+      hash-type: number 
+      slide-number: true
+      preview-links: auto
+      logo: "assets/img/logos_para_fondo_oscuro.png"
+      filters: 
+        - "assets/output-line-highlight.lua"
+      theme: [default, assets/css/gulich.scss]
+      self-contained: true
+author: 
+  - name:
+      given: Verónica
+      family: Andreo
+      dropping-particle: Dra.
+    email: veronica.andreo@ig.edu.ar
+    affiliations: 
+      - name: Instituto Gulich
+      - name: CONICET
+  - name:
+      given: Pablo
+      family: Paccioretti
+      dropping-particle: Dr.
+    email: pablopaccioretti@agro.unc.edu.ar
+    affiliations: 
+      - name: Instituto Gulich
+      - name: UNC - CONICET
+title-slide-attributes: 
+  data-background-color: "#1A428A"
+from: markdown+emoji
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, purl = FALSE}
+library(sf)
+library(ggplot2)
+library(units)
+# install.packages('remotes')
+# remotes::install_github("r-tmap/tmaptools")
+# remotes::install_github("r-tmap/tmap")
+library(tmap)
+```
+
+
+# Temas
+
+:::: {.columns}
+::: {.column width="48%"}
+
+(@) Introducción a R
+(@) Manejo de datos espaciales con `sf`
+    + Lectura de archivos de diferentes formatos
+        - Base de datos de texto (`data.frame`)
+        - Geopackage
+        - Shapefile
+    + Manejo de objetos `sf`
+    + Proyección y reproyección
+:::
+
+::: {.column width="4%"}
+
+:::
+
+::: {.column width="48%"}
+(@) Manejo de bases de datos  `dplyr`
+(@) Visualización
+    + Paquete `ggplot2`
+    + Paquete `tmap`
+:::
+
+::::
+
+# Esta presentación y los datos están disponibles en
+
+[https://veroandreo.github.io/analisis_espacial/](https://veroandreo.github.io/analisis_espacial/)
+
+
+# GitHub {{< fa brands github >}}
+
+- GitHub es una plataforma de desarrollo colaborativo para alojar proyectos utilizando el sistema de control de versiones Git
+
+- El código de los proyectos alojados en GitHub se almacena típicamente de forma pública
+
+- En 2018, Microsoft compró GitHub por 7.500 millones de dólares
+
+---
+
+```{r, echo = FALSE, out.width = "84%", purl = FALSE}
+knitr::include_graphics("assets/img/DescargarGithub.gif")
+```
+
+Una vez descargado, lo extraemos en una carpeta.
+Abrimos con RStudio el proyecto llamado **VisualizaciónDatosEspaciales.Rproj**
+
+---
+
+### Links de descarga
+
+:::: {.columns}
+
+::: {.column width="20%"}
+
+- [R](https://cran.r-project.org/)
+- [RStudio](https://posit.co/downloads/)
+
+:::
+
+::: {.column width="5%"}
+<!-- empty column to create gap -->
+:::
+
+::: {.column width="75%"}
+
+```{r, echo = FALSE, out.width = "85%", purl = FALSE}
+knitr::include_graphics("assets/img/AbrirProyectoyScript.gif")
+```
+
+:::
+
+::::
+
+
+# R e Interfaz con RStudio
+
+
+```{r, echo = FALSE, out.width = "80%", purl = FALSE }
+knitr::include_graphics("assets/img/Rstudiopartes.jpg")
+```
+
+---
+
+## Sintaxis
+
++ Los `#` indican comentarios en el código, todo lo que está a la derecha de este símbolo no será ejecutado.
++ Si deseamos guardar un resultado de una función en un objeto, debemos utilizar la función de asignación `<-`.
++ Argumentos de una functión se especifican entre paréntesis y están separados por coma: `NombreFuncion(arg1, arg2)`.
++ R distingue mayúsculas y minúsculas.
++ Caracteres especiales (espacios, tildes, signos) son reemplazados por punto (`.`) en nombres de columnas cuando se usan funciones del paquete base.
++ Se recomienda evitar el uso de tildes, ñ, símbolos matemáticos para nombres de los niveles de factores, columnas y objetos.
+
+---
+
+## Ejemplos de código
+
+```{r}
+2 + 2
+normalAleatorio <- rnorm(10, mean = 0, sd = 1)
+normalAleatorio
+
+```
+
+
+
+# Datos espaciales  {background-color="#1A428A"}
+
+---
+
+## R-espacial
+- Hay numerosos paquetes para el manejo de datos espaciales `geoR`, `gstat`, `spdep`, `sf`, `stars`, `terra`, entre otros.
+- Los primeros procedimientos espaciales de R se originaron en el lenguaje S, en la década del 90 [@bivand_implementing_2000].
+- A partir del 2000, R ofrece paquetes que posibilitan el tratamiento de datos espaciales a través de diversos métodos. Algunos de ellos todavía se utilizan.
+- El paquete `sf` se basa en su predecesor `sp`.
+
+
+## Datos espaciales en R
+
++ Los datos vectoriales, usando puntos, líneas y polígonos, permiten representar superficies {{< fa globe-americas >}}
++ Los datos tipo *raster* divide la superficie en celdas (pixeles) de tamaño constante {{< fa th >}}
+
+
+```{r, echo = FALSE, out.width = "20%", purl = FALSE}
+knitr::include_graphics("assets/img/SateliteTrabajando.gif")
+```
+
+---
+
+### Paquete `sf`
+
+*Simple features* es una manera estandarizada de codificar, en computadoras, 
+datos **vectoriales** (puntos {{< fa ellipsis-h >}}, 
+lineas {{< fa solid lines-leaning >}} y polígonos {{< fa draw-polygon >}})
+
+El paquete `sf` implementa *simple features* en R y conserva las mismas capacidades para el manejo de datos vectoriales como los paquetes `sp`, `rgeos` y `rgdal` [@Pebesma_RJ]
+
+El manejo de objetos espaciales se convirtió en un proceso más simple y acorde a la lógica de programación de R
+
+
+---
+
+### Paquete `sf`
+::: {.incremental}
+
+- El paquete `sf` permite el análisis y el manejo de archivos con datos espaciales
+
+- Los objetos espaciales `sf` están almacenados como `data.frame`, donde los datos geográficos ocupan una columna especial (*geometry list-column*)
+
+- A partir de un objeto `sf` se puede obtener un `data.frame`, el cual tendrá una columna del tipo lista con la posición geográfica
+
+- Las funciones del paquete comienzan con `st_`
+
+- Los objetos espaciales `sf` pueden ser tratados como `data.frame` en la mayoría de las operaciones
+
+:::
+
+::: {.notes}
+- Tipos de objetos espaciales (Vectorial, Raster)
+- Lectura de diferentes tipos de archivos
+- Asignación del sistema de coordenadas
+    + Transformacion de cordenadas
+- Separar las coordenadas de los datos
+- Recortar capas en función de otra
+- Herramientas para el manejo de objetos
+    + Media, mediana de valores de punto dentro de poligono
+    + Conteo de puntos dentro de un poligono
+    + Union puntos, union diferentes capas
+
+:::
+
+--- 
+
+### Paquete `terra`
+- Es compatible con objetos de tipo *raster* en R
+- Provee numerosas funciones para crear, leer, exportar, manipular y procesar datos de tipo *raster*
+- Permite trabajar con *raster* de dimensiones muy grandes para ser almacenados en la memoria RAM
+- Cada celda del archivo *raster*, puede contener un único valor (numérico o categórico)
+- Se pueden agrupar más de una capa en un mismo *raster*
+
+
+::: {.notes}
+
+En vez de cargar todo el *raster* en la memoria RAM, tiene la posibilidad de dividirlo en fragmentos más pequeños y procesarlos de manera iterativa.
+
+:::
+
+
+## Sistema de coordenadas de referencia
+
+- Define cómo los elementos espaciales de los datos se relacionan con la superficie terrestre
+- Pueden ser
+    + Sistemas de coordenadas geográficas: Identifica cualquier punto de la superficie terrestre utilizando Latitud y Longitud
+    + Proyecciones: Basados en coordenadas cartesianas en una superficie plana (Ejemplo *UTM*)
+
+::: {.v-center-container}
+
+```{r, echo = FALSE, out.width = "34%", purl = FALSE }
+knitr::include_graphics("assets/img/Proyecciones.gif")
+```
+
+:::
+
+# Manos a la obra {{< fa laptop-code >}} {background-color="#1A428A"}
+
+## Lectura de archivos {{< fa database >}}
+
+- Desde archivo de *texto* (Muestreo de Suelo de la Provincia de Córdoba)
+- Desde un archivo *Shapefile* (.shp) (Cuencas de la Provincia de Córdoba)
+- Desde un archivo *GeoPackage* (.gpkg) (Departamentos de la Provincia de Córdoba)
+
+
+## Lectura de archivo de texto
+
+```{r}
+muestreo <- read.table("datos/MuestreoSuelo.txt", header = T, sep = "\t")
+```
+
+```{r}
+muestreo
+```
+
+# Paquete `ggplot2`
+
+Idividualmente se especifican partes del gráfico. Luego estas partes
+se combinan para obtener el gráfico completo. Estas partes son:
+
+- Datos
+- Mapeo estético (*aesthetic mapping*)
+- Objetos geométricos (*geometric object*)
+- Transformaciones estadísticas (*statistical transformations*)
+- Escalas (*scales*)
+- Sistema de coordenadas (*coordinate system*)
+- Ajustes de posición (*position adjustments*)
+- Particiones (*faceting*)
+
+---
+
+## Gráficos usando `ggplot2` {auto-animate="true"}
+
+```{r}
+ggplot()
+```
+
+## Gráficos usando `ggplot2` {auto-animate="true"}
+
+```{r}
+ggplot(muestreo)
+```
+
+## Gráficos usando `ggplot2` {auto-animate="true"}
+
+```{r}
+ggplot(muestreo, aes(Limo))
+```
+
+## Gráficos usando `ggplot2` {auto-animate="true"}
+
+```{r}
+ggplot(muestreo, aes(Limo)) +
+  geom_histogram()
+```
+
+# Paquete `dplyr`
+
+`dplyr` fue diseñado para la manipulación y transformación de datos de una manera sencilla y eficiente.
+
+**Manipulación de datos verbales:** dplyr se basa en "verbos" de manipulación de datos, como `filter`, `mutate`, `summarize`, y `group_by`, lo que simplifica la manipulación de datos en pasos lógicos.
+
+
+## Manejo de bases de datos {auto-animate="true"}
+
+```{r}
+library(dplyr)
+
+muestreo |>
+  mutate(mediaLimo = mean(Limo, na.rm = TRUE))
+
+```
+
+
+## Manejo de bases de datos {auto-animate="true"}
+
+```{r}
+library(dplyr)
+
+muestreo |>
+  mutate(mediaLimo = mean(Limo, na.rm = TRUE)) |> 
+  filter(Limo > mediaLimo)
+
+```
+
+
+## Manejo de bases de datos {auto-animate="true"}
+
+```{r}
+library(dplyr)
+
+muestreo |>
+  mutate(mediaLimo = mean(Limo, na.rm = TRUE)) |> 
+  filter(Limo > mediaLimo) |> 
+  select(-mediaLimo)
+
+```
+
+
+## Manejo de bases de datos {auto-animate="true"}
+
+```{r}
+library(dplyr)
+
+base_subset <- 
+  muestreo |>
+  mutate(mediaLimo = mean(Limo, na.rm = TRUE)) |> 
+  filter(Limo > mediaLimo) |> 
+  select(-mediaLimo)
+
+```
+
+
+## Conversión de `data.frame` a objeto espacial
+
+```{r}
+print(muestreo <- st_as_sf(muestreo, 
+                           coords = c("Xt", "Yt"), 
+                           crs = 32720), 
+      n = 5)
+
+```
+
+---
+
+```{r}
+summary(muestreo)
+```
+
+---
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+```{r, fig.height = 8.5, fig.width = 13}
+plot(muestreo, pch = 18 , cex = 3)
+```
+
+:::
+
+::: {.column width="50%"}
+```{r}
+ggplot(muestreo) +
+  geom_sf()
+```
+
+:::
+
+::::
+
+---
+
+```{r}
+ggplot(muestreo) +
+  geom_sf(aes(fill = Limo), shape = 22, size = 3)
+
+```
+
+
+# Lectura de archivo *Shapefile*
+
+*Shapefile* consisten en varios archivos de datos espaciales,
+con el mimso nombre base que residen en el mismo directorio.
+Fue desarrollado por la compañía ESRI.
+
+Los archivos obligatorios son:
+
+- **.shp**: es el archivo principal que almacena la geometría de la entidad
+- **.shx**: es el archivo de índice que almacena el índice de la geometría de la entidad
+- **.dbf**: es la tabla dBASE que almacena la información de atributos de las entidades
+
+Pero pueden tener otros tipos de archivos
+
+**.prj**, **.xml**, **.sbn**, **.sbx** ....
+
+::: {.notes}
+
+- **.prj**: es el archivo que almacena información del sistema de coordenadas
+- **.xml**: metadatos de ArcGIS, es el archivo que almacena información sobre el shapefile
+- **.sbn** y **.sbx**: son los archivos que almacenan el índice espacial de las entidades
+- **.fbn** y **.fbx**: son los archivos que almacenan el índice espacial de las entidades para los shapefiles que son solo de lectura.
+- **.ain** y **.aih**: son los archivos que almacenan el índice de atributo de los campos activos en una tabla o una tabla de atributos del tema.
+- **.atx**: se crea un archivo .atx para cada shapefile o índice de atributos de shapefile dBase creado en ArcCatalog. ArcGIS no utiliza los índices de atributo de ArcView GIS 3.x de los archivos shapefile y dBase. Se ha creado un nuevo modelo de indexación de atributos para los archivos shapefile y dBase.
+- **.ixs**: índice de geocodificación para los shapefiles de lectura y escritura.
+- **.mxs**: índice de geocodificación para los shapefiles de lectura y escritura (formato ODB).
+- **.cpg**: es un archivo opcional que se puede utilizar para especificar la página de código para identificar el conjunto de caracteres que se va a utilizar.
+
+:::
+
+
+# Lectura de archivo *GeoPackage*
+
+- Es un formato de archivo universal construido sobre la base de SQLite, para compartir y transferir datos espaciales vectoriales **y** raster.
+- A diferencia de los *shapesfiles*, se trata de un único archivo **.gpkg**, por lo que es ideal para transferir información geoespacial
+- Diseñado para almacenar datos complejos y voluminosos (hasta 140 TB)
+- Permite almacenar diferentes tipos de geometrías en un mismo archivo
+- Destaca por su flexibilidad pudiendolo utilizar de muchas maneras, por lo que puede reemplazar al formato shapefile
+
+
+# Vectoriales
+
+```{r}
+print(departamentos <- read_sf("datos/deptos_cba", stringsAsFactors = TRUE), n = 3)
+```
+
+
+# Vectoriales
+
+```{r}
+#| class-output: highlight
+#| output-line-numbers: "1,2,6,9"
+print(departamentos <- read_sf("datos/deptos_cba", stringsAsFactors = TRUE), n = 3)
+```
+
+---
+
+```{r}
+summary(departamentos)
+```
+
+---
+
+
+```{r}
+plot(departamentos)
+```
+
+
+# Ahora visualicemos `cuencas`
+
+```{r}
+print(cuencas <- read_sf("datos/cuencas_cba/cuencas_cba.gpkg", stringsAsFactors = TRUE), n = 2)
+
+```
+
+
+---
+
+```{r}
+summary(cuencas, maxsum = 3)
+```
+
+---
+
+
+```{r, fig.height=7.5}
+plot(cuencas)
+```
+
+
+---
+
+## Sistema de coordenadas de referencia
+
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+st_crs(departamentos)
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+st_crs(cuencas)
+```
+
+:::
+
+::::
+
+```{r}
+st_crs(departamentos) == st_crs(cuencas)
+```
+
+---
+
+```{r, highlight.output=c(3)}
+cuencas <- st_transform(cuencas, st_crs(departamentos))
+st_crs(cuencas)
+```
+
+```{r}
+st_crs(departamentos) == st_crs(cuencas)
+```
+
+---
+
+```{r, highlight.output=c(5, 6)}
+print(cuencas, n = 4)
+```
+
+---
+
+
+```{r}
+
+ggplot(muestreo) +
+  geom_sf(aes(fill = Limo), shape = 22, size = 3) +
+  geom_sf(data = departamentos)
+
+```
+
+---
+
+
+```{r}
+ggplot(muestreo) +
+  geom_sf(data = departamentos) +
+  geom_sf(aes(fill = Limo), shape = 22, size = 3) 
+ 
+```
+
+
+---
+
+## Visualización de datos {auto-animate="true"}
+
+```{r}
+ggplot() +
+  geom_sf(data = cuencas)
+```
+
+
+## Visualización de datos {auto-animate="true"}
+
+```{r}
+ggplot() +
+  geom_sf(data = cuencas) +
+  geom_sf(data = muestreo)
+```
+
+
+## Visualización de datos {auto-animate="true"}
+
+```{r}
+ggplot() +
+  geom_sf(data = cuencas) +
+  geom_sf(data = muestreo, aes(color = Limo), size = 3)
+```
+
+## Visualización de datos {auto-animate="true"}
+
+```{r}
+ggplot() +
+  geom_sf(data = cuencas) +
+  geom_sf(data = muestreo, aes(color = Limo), size = 3) +
+  scale_color_continuous(type = "viridis")
+```
+
+## Visualización de datos {auto-animate="true"}
+
+```{r}
+
+ggplot() +
+  geom_sf(data = cuencas) +
+  geom_sf(data = muestreo, aes(color = Limo), size = 3) +
+  scale_color_continuous(type = "viridis", na.value = "pink")
+
+```
+
+
+## Cuantos puntos de muestreo hay en cada cuenca??? {{< fa pencil-ruler >}}
+
+
+```{r, error=TRUE}
+muestreoLatLong <- st_transform(muestreo, st_crs(departamentos))
+st_covers(cuencas, muestreoLatLong)
+```
+
+
+```{r, results='markup'}
+cuencasUTM <- st_transform(cuencas, st_crs(muestreo))
+lengths(st_covers(cuencasUTM, muestreo))
+
+```
+
+
+---
+
+
+```{r}
+st_area(cuencas)
+lengths(st_covers(cuencasUTM, muestreo))/st_area(cuencasUTM)
+
+```
+
+---
+
+
+```{r}
+puntosKm <- lengths(st_covers(cuencasUTM, muestreo))/units::set_units(st_area(cuencasUTM), km^2)
+cuencasUTM$CantidadMuestrasKm <- as.numeric(puntosKm)
+cuencasUTM$CantidadMuestrasKm
+```
+
+---
+
+
+```{r}
+
+ggplot(cuencasUTM) +
+  geom_sf(aes(fill = CantidadMuestrasKm))
+
+```
+
+
+---
+
+
+```{r}
+st_covers(cuencasUTM,muestreo)
+
+```
+
+---
+
+
+```{r, highlight.output=c(1,2,3)}
+ mediaLimo <- sapply(st_covers(cuencasUTM,muestreo), function(x) {
+  mean(muestreo[x,][["Limo"]], na.rm = TRUE)
+     })
+mediaLimo
+
+
+```
+
+
+# Visualizacion {auto-animate="true"}
+
+```{r}
+#| label: ggplot-cuencasMediaLimo
+#| output-location: column
+cuencasUTM$MediaLimo <- mediaLimo
+ggplot(cuencasUTM) +
+  geom_sf(aes(fill = MediaLimo))
+
+```
+
+
+## Visualización de datos {auto-animate="true"}
+
+```{r}
+#| label: ggplot-cuencasMediaLimolab
+#| output-location: column
+ggplot(cuencasUTM) +
+  geom_sf(aes(fill = MediaLimo)) +
+  labs(fill = "Limo (%)")
+
+```
+
+## Visualización de datos {auto-animate="true"}
+
+```{r, fig.height=5}
+#| label: ggplot-cuencasMediaLimolabNorth
+#| output-location: column
+ggplot(cuencasUTM) +
+  geom_sf(aes(fill = MediaLimo)) +
+  labs(fill = "Limo (%)") + 
+  ggspatial::annotation_north_arrow(
+    location = "tr", 
+    which_north = "grid"
+    )
+
+```
+
+# Paquete `tmap`
+
+- La sintaxis es similar a `ggplot2`, pero orientada a mapas
+- La mayoría de las funciones comienzan con `tm_`
+- Para comenzar a graficar, es necesario especificarlo con `tm_shape`
+- Las capas se agregan mediante `+`
+- Permite graficar mapas estáticos o interactivos con el mismo código `tmap_mode()`.
+
+
+
+---
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{r}
+tm_shape(cuencasUTM) +
+  tm_fill()
+
+```
+:::
+
+::: {.column width="50%"}
+```{r tmap-cuencasMediaLimoSB}
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo")
+
+```
+
+:::
+
+::::
+
+---
+
+```{r}
+#| label: tmap-cuencasMediaLimo
+#| output-location: column
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo") +
+  tm_borders()
+
+```
+
+---
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{r}
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo", style = "quantile") +
+  tm_borders() 
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r}
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo", style = "cont") +
+  tm_borders() 
+```
+
+:::
+
+::::
+
+---
+
+
+```{r}
+#| label: tmap-cuencasMediaLimoContInterac
+#| output-location: column
+tmap_mode("view")
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo", style = "cont") +
+  tm_borders() +
+  tm_basemap("Esri.WorldTopoMap")
+
+
+```
+
+
+
+---
+
+
+```{r}
+#| label: tmap-cuencasMediaLimoquantInteracFondo
+#| output-location: column
+#| 
+tmap_mode("view")
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo",
+          fill.scale = tm_scale_intervals(style = 'quantile'),
+          fill_alpha = 0.8) +
+  tm_borders() +
+  tm_basemap(c("Stadia.Stamen.Watercolor",
+               "Esri",
+               "OpenTopoMap",
+               "Stamen.Terrain"))
+# names(leaflet::providers)
+```
+
+
+---
+
+
+
+```{r}
+#| label: tmap-cuencasUTMPllette
+#| output-location: column
+#| 
+tmap_mode("plot")
+cuencas_tmap <- tm_shape(cuencasUTM) +
+  tm_fill(
+    fill = "MediaLimo",
+    fill.scale = tm_scale_continuous(),
+    fill.legend = tm_legend(
+      title = 'Media Limo',
+      text.size = 20,
+      title.size = 23,
+      legend.outside = TRUE,
+      frame = "gray50"
+    )
+  ) +
+  tm_borders()
+cuencas_tmap
+
+```
+
+---
+
+
+
+```{r}
+#| label: tmap-muestreoNA
+#| output-location: column
+#| 
+muestreo_tmap <- tm_shape(muestreo) +
+  tm_dots("Limo", size = 0.5,
+          palette = "BuGn", colorNA= NULL,
+          legend.hist=T) +
+  tm_layout(legend.format = list(text.separator= " a "),
+            legend.outside = TRUE,
+            legend.hist.width = 2.5)
+muestreo_tmap
+
+```
+
+
+---
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+```{r ref.label = 'tmap-cuencasUTMPllette', echo = FALSE, warning=FALSE, message=FALSE, purl=FALSE}
+```
+:::
+
+::: {.column width="50%"}
+```{r ref.label = 'tmap-muestreoNA', echo = FALSE, warning=FALSE, message=FALSE, purl=FALSE}
+```
+:::
+
+::::
+
+
+---
+
+```{r}
+#| label: tmap-doscapas
+#| output-location: column
+#| 
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo", 
+          style = "cont", 
+          # palette = c("red", "blue"),
+          textNA = "Sin Datos",
+          title.size = "Media Limo") +
+  tm_borders() +
+  tm_legend(
+    text.size=1,
+    title.size=1.2,
+    legend.outside=TRUE,
+    frame="gray50",
+    height=.6) +
+  tm_shape(muestreo) +
+  tm_dots("Limo", size = 0.5,
+          palette = "BuGn", colorNA= NULL,
+          legend.hist=T) +
+  tm_layout(legend.format = list(text.separator= " a "),
+            legend.outside = TRUE,
+            legend.hist.width = 2.5)
+```
+
+
+---
+
+```{r tmap-dosObjetos, fig.show = 'hide', results = 'hide'}
+#| label: tmap-dosObjetos
+#| output-location: column
+#| 
+cuencas_tmap +
+muestreo_tmap
+```
+
+---
+
+
+```{r}
+#| label: tmap-escala
+#| output-location: column
+#| 
+cuencas_tmap +
+muestreo_tmap +
+  tm_scale_bar() +
+  tm_compass(position = c( "right", "top"))
+
+```
+
+---
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+```{r, fig.height=4.5}
+tmap_cuencas <- tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo", style = "quantile") +
+  tm_borders() +
+  tm_legend(legend.outside = TRUE)
+tmap_cuencas
+
+
+```
+
+:::
+
+::: {.column width="50%"}
+
+```{r, fig.height=4.5}
+tmap_muestreo <-   tm_shape(muestreo) +
+  tm_bubbles(col = "K", style = "cont", textNA = "Sin dato") +
+  tm_legend(legend.outside = TRUE)
+tmap_muestreo
+
+```
+:::
+
+::::
+
+---
+
+
+```{r, fig.width=7}
+tmap_arrange(tmap_cuencas, tmap_muestreo)
+
+```
+
+
+---
+
+```{r}
+# tmap_mode("view")
+tm_shape(cuencasUTM) +
+  tm_fill("MediaLimo",
+          fill.scale = tm_scale_continuous(values = "RdYlGn"),
+          fill.legend = tm_legend(title = "Media Limo")) +
+  tm_borders() +
+  tm_facets("SISTEMA", nrow = 1, sync = TRUE) +
+  tm_basemap("OpenStreetMap")
+
+```
+
+
+# Referencias
